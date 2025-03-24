@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request, Query
 from fastapi.responses import StreamingResponse, JSONResponse
 from app.agents.llm_agent import LLMAgent, UserContext, IntentAnalysis
 from app.agents.collection_strategy_agent import CollectionStrategyAgent
+from app.agents.training_advisor_agent import TrainingAdvisorAgent
 from app.core.config import get_settings
 from pydantic import BaseModel
 import json
@@ -14,6 +15,9 @@ def get_llm_agent():
 
 def get_collection_strategy_agent():
     return CollectionStrategyAgent()
+
+def get_training_advisor_agent():
+    return TrainingAdvisorAgent()
 
 class ChatRequest(BaseModel):
     message: str
@@ -28,7 +32,7 @@ class IntentRequest(BaseModel):
     user_id: str
     session_id: str
 
-async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, collection_strategy_agent: CollectionStrategyAgent):
+async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, collection_strategy_agent: CollectionStrategyAgent, training_advisor_agent: TrainingAdvisorAgent):
     """
     流式处理分析过程
     """
@@ -69,6 +73,30 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, collectio
 
         # 发送意图分析完成的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'intent_analysis_completed', 'message': '意图分析完成'})}\n\n"
+        await asyncio.sleep(0.1)  # 减少等待时间
+
+        # 发送提问分析开始的消息
+        yield f"data: {json.dumps({'type': 'status', 'status': 'question_analysis_started', 'message': '正在进行提问分析...'})}\n\n"
+        await asyncio.sleep(0.1)  # 减少等待时间
+
+        # 进行提问分析，使用流式响应
+        question_analysis = None
+        async for chunk in training_advisor_agent.analyze_question_stream(context, intent_analysis):
+            if isinstance(chunk, str):
+                # 如果是状态消息，立即发送
+                yield f"data: {json.dumps({'type': 'status', 'message': chunk})}\n\n"
+                await asyncio.sleep(0.1)  # 减少等待时间
+            elif isinstance(chunk, dict):
+                # 如果是分析结果，立即发送
+                yield f"data: {json.dumps({'type': 'question_analysis', 'data': chunk})}\n\n"
+                await asyncio.sleep(0.1)  # 减少等待时间
+                question_analysis = chunk
+
+        if not question_analysis:
+            raise ValueError("提问分析失败")
+
+        # 发送提问分析完成的消息
+        yield f"data: {json.dumps({'type': 'status', 'status': 'question_analysis_completed', 'message': '提问分析完成'})}\n\n"
         await asyncio.sleep(0.1)  # 减少等待时间
 
         # 发送催收策略分析开始的消息
@@ -118,7 +146,8 @@ async def analyze_intent(
     user_id: str = Query(None),
     session_id: str = Query(None),
     llm_agent: LLMAgent = Depends(get_llm_agent),
-    collection_strategy_agent: CollectionStrategyAgent = Depends(get_collection_strategy_agent)
+    collection_strategy_agent: CollectionStrategyAgent = Depends(get_collection_strategy_agent),
+    training_advisor_agent: TrainingAdvisorAgent = Depends(get_training_advisor_agent)
 ):
     """
     分析用户意图并生成催收策略的API接口（流式响应）
@@ -141,7 +170,7 @@ async def analyze_intent(
         )
 
     async def event_stream():
-        async for chunk in stream_analysis(intent_request, llm_agent, collection_strategy_agent):
+        async for chunk in stream_analysis(intent_request, llm_agent, collection_strategy_agent, training_advisor_agent):
             # 发送消息
             yield chunk
             # 强制刷新缓冲区

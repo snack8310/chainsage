@@ -4,7 +4,29 @@ import { Box, Text, Container, TextField, Button, Flex, Badge, Card } from '@rad
 interface IntentResult {
   intent: string;
   confidence: number;
-  entities: Record<string, string>;
+  entities: Record<string, string | string[]>;
+}
+
+interface QuestionAnalysis {
+  question_analysis: {
+    clarity: number;
+    specificity: number;
+    context: number;
+    professionalism: number;
+    overall_score: number;
+  };
+  improvement_suggestions: {
+    clarity_improvements: string[];
+    specificity_improvements: string[];
+    context_improvements: string[];
+    professionalism_improvements: string[];
+  };
+  best_practices: {
+    question_structure: string;
+    key_elements: string[];
+    examples: string[];
+  };
+  follow_up_questions: string[];
 }
 
 interface CollectionStrategy {
@@ -18,11 +40,12 @@ interface CollectionStrategy {
 
 interface AnalysisResponse {
   intent_analysis: IntentResult;
+  question_analysis: QuestionAnalysis;
   collection_strategy: CollectionStrategy;
 }
 
 interface AnalysisStatus {
-  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'collection_strategy' | 'collection_strategy_progress' | 'error';
+  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'error';
   status?: string;
   message?: string;
   data?: any;
@@ -34,6 +57,7 @@ interface AnalysisStatus {
   };
   show_results?: {
     intent: boolean;
+    question: boolean;
     strategy: boolean;
   };
 }
@@ -96,7 +120,7 @@ USER2:我来给您一个具体的例子：
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
-  const [showResults, setShowResults] = useState({ intent: false, strategy: false });
+  const [showResults, setShowResults] = useState({ intent: false, question: false, strategy: false });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +129,7 @@ USER2:我来给您一个具体的例子：
     setIsLoading(true);
     setError(null);
     setResult(null);
-    setShowResults({ intent: false, strategy: false });
+    setShowResults({ intent: false, question: false, strategy: false });
     setProgressSteps([]);
 
     try {
@@ -141,6 +165,27 @@ USER2:我来给您一个具体的例子：
                     confidence: data.data.partial_confidence || prev?.intent_analysis?.confidence || 0,
                     entities: data.data.partial_entities || prev?.intent_analysis?.entities || {}
                   },
+                  question_analysis: prev?.question_analysis || {
+                    question_analysis: {
+                      clarity: 0,
+                      specificity: 0,
+                      context: 0,
+                      professionalism: 0,
+                      overall_score: 0
+                    },
+                    improvement_suggestions: {
+                      clarity_improvements: [],
+                      specificity_improvements: [],
+                      context_improvements: [],
+                      professionalism_improvements: []
+                    },
+                    best_practices: {
+                      question_structure: '',
+                      key_elements: [],
+                      examples: []
+                    },
+                    follow_up_questions: []
+                  },
                   collection_strategy: prev?.collection_strategy || {
                     strategy: '',
                     priority: '',
@@ -155,6 +200,27 @@ USER2:我来给您一个具体的例子：
               case 'intent_analysis':
                 setResult(prev => ({
                   intent_analysis: data.data,
+                  question_analysis: prev?.question_analysis || {
+                    question_analysis: {
+                      clarity: 0,
+                      specificity: 0,
+                      context: 0,
+                      professionalism: 0,
+                      overall_score: 0
+                    },
+                    improvement_suggestions: {
+                      clarity_improvements: [],
+                      specificity_improvements: [],
+                      context_improvements: [],
+                      professionalism_improvements: []
+                    },
+                    best_practices: {
+                      question_structure: '',
+                      key_elements: [],
+                      examples: []
+                    },
+                    follow_up_questions: []
+                  },
                   collection_strategy: prev?.collection_strategy || {
                     strategy: '',
                     priority: '',
@@ -166,12 +232,52 @@ USER2:我来给您一个具体的例子：
                 }));
                 setShowResults(prev => ({ ...prev, intent: true }));
                 break;
+              case 'question_analysis':
+                setResult(prev => ({
+                  intent_analysis: prev?.intent_analysis || {
+                    intent: '',
+                    confidence: 0,
+                    entities: {},
+                  },
+                  question_analysis: data.data,
+                  collection_strategy: prev?.collection_strategy || {
+                    strategy: '',
+                    priority: '',
+                    timeline: '',
+                    approach: '',
+                    risk_level: '',
+                    notes: '',
+                  }
+                }));
+                setShowResults(prev => ({ ...prev, question: true }));
+                break;
               case 'collection_strategy_progress':
                 setResult(prev => ({
                   intent_analysis: prev?.intent_analysis || {
                     intent: '',
                     confidence: 0,
                     entities: {},
+                  },
+                  question_analysis: prev?.question_analysis || {
+                    question_analysis: {
+                      clarity: 0,
+                      specificity: 0,
+                      context: 0,
+                      professionalism: 0,
+                      overall_score: 0
+                    },
+                    improvement_suggestions: {
+                      clarity_improvements: [],
+                      specificity_improvements: [],
+                      context_improvements: [],
+                      professionalism_improvements: []
+                    },
+                    best_practices: {
+                      question_structure: '',
+                      key_elements: [],
+                      examples: []
+                    },
+                    follow_up_questions: []
                   },
                   collection_strategy: {
                     strategy: data.data.partial_strategy || prev?.collection_strategy?.strategy || '',
@@ -190,6 +296,27 @@ USER2:我来给您一个具体的例子：
                     intent: '',
                     confidence: 0,
                     entities: {},
+                  },
+                  question_analysis: prev?.question_analysis || {
+                    question_analysis: {
+                      clarity: 0,
+                      specificity: 0,
+                      context: 0,
+                      professionalism: 0,
+                      overall_score: 0
+                    },
+                    improvement_suggestions: {
+                      clarity_improvements: [],
+                      specificity_improvements: [],
+                      context_improvements: [],
+                      professionalism_improvements: []
+                    },
+                    best_practices: {
+                      question_structure: '',
+                      key_elements: [],
+                      examples: []
+                    },
+                    follow_up_questions: []
                   },
                   collection_strategy: data.data
                 }));
@@ -406,12 +533,100 @@ USER2:我来给您一个具体的例子：
                                   <Badge color="gray" size="2">
                                     {key}:
                                   </Badge>
-                                  <Text size="2">{value}</Text>
+                                  <Text size="2">
+                                    {Array.isArray(value) ? value.join(', ') : value}
+                                  </Text>
                                 </Flex>
                               ))}
                             </Flex>
                           </Box>
                         )}
+                      </Flex>
+                    </Card>
+                  )}
+
+                  {/* Question Analysis Result */}
+                  {result?.question_analysis && showResults.question && (
+                    <Card>
+                      <Flex direction="column" gap="3">
+                        <Text size="3" weight="bold">提问分析结果</Text>
+                        
+                        {/* 提问评分 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">提问评分：</Text>
+                          <Flex direction="column" gap="2">
+                            <Flex gap="2" align="center">
+                              <Badge color="blue" size="2">清晰度:</Badge>
+                              <Text size="2">{(result.question_analysis.question_analysis.clarity * 100).toFixed(1)}%</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="green" size="2">具体性:</Badge>
+                              <Text size="2">{(result.question_analysis.question_analysis.specificity * 100).toFixed(1)}%</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="orange" size="2">上下文:</Badge>
+                              <Text size="2">{(result.question_analysis.question_analysis.context * 100).toFixed(1)}%</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="purple" size="2">专业性:</Badge>
+                              <Text size="2">{(result.question_analysis.question_analysis.professionalism * 100).toFixed(1)}%</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="red" size="2">总体评分:</Badge>
+                              <Text size="2">{(result.question_analysis.question_analysis.overall_score * 100).toFixed(1)}%</Text>
+                            </Flex>
+                          </Flex>
+                        </Box>
+
+                        {/* 改进建议 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">改进建议：</Text>
+                          <Flex direction="column" gap="2">
+                            {Object.entries(result.question_analysis.improvement_suggestions).map(([key, suggestions]) => (
+                              <Box key={key}>
+                                <Text size="2" weight="bold" mb="1">{key.replace('_improvements', '')}:</Text>
+                                <Flex direction="column" gap="1">
+                                  {suggestions.map((suggestion, index) => (
+                                    <Text key={index} size="2">• {suggestion}</Text>
+                                  ))}
+                                </Flex>
+                              </Box>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 最佳实践 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">最佳实践：</Text>
+                          <Flex direction="column" gap="2">
+                            <Text size="2" weight="bold">提问结构：</Text>
+                            <Text size="2">{result.question_analysis.best_practices.question_structure}</Text>
+                            
+                            <Text size="2" weight="bold">关键要素：</Text>
+                            <Flex direction="column" gap="1">
+                              {result.question_analysis.best_practices.key_elements.map((element, index) => (
+                                <Text key={index} size="2">• {element}</Text>
+                              ))}
+                            </Flex>
+                            
+                            <Text size="2" weight="bold">示例：</Text>
+                            <Flex direction="column" gap="1">
+                              {result.question_analysis.best_practices.examples.map((example, index) => (
+                                <Text key={index} size="2">• {example}</Text>
+                              ))}
+                            </Flex>
+                          </Flex>
+                        </Box>
+
+                        {/* 跟进问题 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">跟进问题：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.question_analysis.follow_up_questions.map((question, index) => (
+                              <Text key={index} size="2">• {question}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
                       </Flex>
                     </Card>
                   )}
