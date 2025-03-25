@@ -9,85 +9,21 @@ import { DialogueInput } from './intent/DialogueInput';
 import { useIntentAnalysis } from './intent/hooks/useIntentAnalysis';
 import { ProgressStep } from './intent/types';
 
-// Mock data for progress steps
-const mockProgressSteps: ProgressStep[] = [
-  {
-    id: 'step_1',
-    title: '意图分析',
-    description: '正在分析用户输入的意图...',
-    status: 'completed' as const,
-    timestamp: new Date('2024-03-20 10:00:00')
-  },
-  {
-    id: 'step_2',
-    title: '问题分析',
-    description: '分析问题类型和关键信息...',
-    status: 'completed' as const,
-    timestamp: new Date('2024-03-20 10:00:01')
-  },
-  {
-    id: 'step_3',
-    title: '策略生成',
-    description: '生成信息收集策略...',
-    status: 'processing' as const,
-    timestamp: new Date('2024-03-20 10:00:02')
-  },
-  {
-    id: 'step_4',
-    title: 'AI响应',
-    description: '等待生成AI响应...',
-    status: 'processing' as const,
-    timestamp: new Date('2024-03-20 10:00:03')
-  },
-  {
-    id: 'step_5',
-    title: '结果整合',
-    description: '整合分析结果...',
-    status: 'processing' as const,
-    timestamp: new Date('2024-03-20 10:00:04')
-  },
-  {
-    id: 'step_6',
-    title: '反馈优化',
-    description: '优化响应质量...',
-    status: 'processing' as const,
-    timestamp: new Date('2024-03-20 10:00:05')
-  },
-  {
-    id: 'step_7',
-    title: '最终输出',
-    description: '生成最终输出结果...',
-    status: 'processing' as const,
-    timestamp: new Date('2024-03-20 10:00:06')
-  },
-  {
-    id: 'step_8',
-    title: '完成',
-    description: '处理完成',
-    status: 'processing' as const,
-    timestamp: new Date('2024-03-20 10:00:07')
-  }
-];
-
 const ScrollableBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Box style={{ 
-    height: '100%',
+  <div style={{ 
+    height: '100vh',
     display: 'flex', 
     flexDirection: 'column',
     overflow: 'hidden',
-    minHeight: 0,
     position: 'relative'
   }}>
     {children}
-  </Box>
+  </div>
 );
 
 const IntentAnalysis: React.FC = () => {
   const [input, setInput] = useState(`如何提高工作效率？`);
   const { isLoading, result, error, progressSteps, showResults, handleSubmit } = useIntentAnalysis();
-
-  // 使用mock数据替换progressSteps
-  const displayProgressSteps = mockProgressSteps;
 
   // Add refs for debugging
   const leftSectionRef = useRef<HTMLDivElement>(null);
@@ -122,12 +58,7 @@ const IntentAnalysis: React.FC = () => {
 
     // Log initial dimensions
     logDimensions();
-
-    // Log dimensions when progress steps change
-    if (displayProgressSteps.length > 0) {
-      logDimensions();
-    }
-  }, [displayProgressSteps]);
+  }, []);
 
   return (
     <ScrollableBox>
@@ -145,48 +76,140 @@ const IntentAnalysis: React.FC = () => {
       </Box>
 
       {/* Main Content */}
-      <Box style={{ 
+      <div style={{ 
         flex: 1,
         overflow: 'hidden',
         padding: '16px 0',
-        minHeight: 0,
         height: '100%',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column'
       }}>
-        <Container size="3" style={{ 
+        <div style={{ 
           height: '100%', 
           display: 'flex', 
           flexDirection: 'column', 
-          minHeight: 0,
           overflow: 'hidden',
           position: 'relative',
-          flex: 1
+          flex: 1,
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%'
         }}>
-          {result && (showResults.intent || showResults.strategy || showResults.ai_response) ? (
-            // Two columns layout when there are results
-            <Flex gap="4" style={{ 
-              flex: 1, 
-              minHeight: 0, 
-              overflow: 'hidden',
-              height: '100%',
-              position: 'relative'
-            }}>
-              {/* Left Section - Input and Progress */}
-              <Box ref={leftSectionRef} style={{ 
+          <div style={{ 
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            {result && (showResults.intent || showResults.strategy || showResults.ai_response) ? (
+              // Two columns layout when there are results
+              <Flex gap="4" style={{ 
                 flex: 1, 
-                display: 'flex',
-                flexDirection: 'column',
-                minWidth: 0,
-                minHeight: 0,
-                height: '100%',
-                paddingRight: '16px',
-                gap: '16px',
                 overflow: 'hidden',
+                height: '100%',
                 position: 'relative'
               }}>
-                {/* Input Card - Fixed Height */}
+                {/* Left Section - Input and Progress */}
+                <div ref={leftSectionRef} style={{ 
+                  flex: 1, 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minWidth: 0,
+                  height: '100%',
+                  paddingRight: '16px',
+                  gap: '16px',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  {/* Input Card - Fixed Height */}
+                  <DialogueInput 
+                    onSubmit={handleSubmit} 
+                    isLoading={isLoading} 
+                    value={input}
+                    onChange={setInput}
+                  />
+
+                  {/* Progress Steps Card */}
+                  <div ref={progressCardRef} style={{ 
+                    flex: 1, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    position: 'relative',
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--gray-1)',
+                    border: '1px solid var(--gray-5)',
+                    borderRadius: 'var(--radius-3)',
+                    minHeight: 0
+                  }}>
+                    <div style={{ 
+                      flexShrink: 0,
+                      padding: '16px',
+                      borderBottom: '1px solid var(--gray-5)'
+                    }}>
+                      <Text size="3" weight="bold">分析进度</Text>
+                    </div>
+                    <div style={{ 
+                      flex: 1,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      minHeight: 0
+                    }}>
+                      <ScrollArea style={{ 
+                        height: '100%',
+                        overflow: 'auto',
+                        position: 'absolute',
+                        inset: 0
+                      }}>
+                        <div style={{ padding: '16px' }}>
+                          <ProgressLog status={null} progressSteps={progressSteps} />
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Section - Results */}
+                <ScrollArea ref={rightSectionRef} style={{ 
+                  width: '400px', 
+                  flexShrink: 0,
+                  borderLeft: '1px solid var(--gray-5)',
+                  paddingLeft: '16px',
+                  height: '100%',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  <Flex direction="column" gap="4" style={{ padding: '4px', height: '100%', overflow: 'hidden' }}>
+                    {/* Intent Analysis Result */}
+                    {result?.intent_analysis && showResults.intent && (
+                      <IntentAnalysisResult result={result.intent_analysis} />
+                    )}
+
+                    {/* Question Analysis Result */}
+                    {result?.question_analysis && showResults.question && (
+                      <QuestionAnalysisResult result={result.question_analysis} />
+                    )}
+
+                    {/* Collection Strategy Result */}
+                    {result?.collection_strategy && showResults.strategy && (
+                      <CollectionStrategyResult result={result.collection_strategy} />
+                    )}
+
+                    {/* AI Response Result */}
+                    {result?.ai_response && showResults.ai_response && (
+                      <AIResponseResult result={result.ai_response} />
+                    )}
+                  </Flex>
+                </ScrollArea>
+              </Flex>
+            ) : (
+              // Single column layout when there are no results
+              <div style={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                overflow: 'hidden'
+              }}>
                 <DialogueInput 
                   onSubmit={handleSubmit} 
                   isLoading={isLoading} 
@@ -194,115 +217,60 @@ const IntentAnalysis: React.FC = () => {
                   onChange={setInput}
                 />
 
-                {/* Progress Steps Card */}
-                {displayProgressSteps.length > 0 && (
-                  <Box ref={progressCardRef} style={{ 
-                    flex: 1, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    minHeight: 0,
+                {error && (
+                  <Card style={{ flexShrink: 0 }}>
+                    <Flex direction="column" gap="2">
+                      <Text size="3" weight="bold" color="red">错误信息</Text>
+                      <Text size="2">{error}</Text>
+                    </Flex>
+                  </Card>
+                )}
+
+                {/* Progress Steps */}
+                <div style={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  position: 'relative',
+                  overflow: 'hidden',
+                  backgroundColor: 'var(--gray-1)',
+                  border: '1px solid var(--gray-5)',
+                  borderRadius: 'var(--radius-3)',
+                  minHeight: 0
+                }}>
+                  <div style={{ 
+                    flexShrink: 0,
+                    padding: '16px',
+                    borderBottom: '1px solid var(--gray-5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '48px'
+                  }}>
+                    <Text size="3" weight="bold" style={{ lineHeight: '16px' }}>分析进度</Text>
+                  </div>
+                  <div style={{ 
+                    flex: 1,
+                    overflow: 'hidden',
                     position: 'relative',
-                    overflow: 'hidden'
+                    minHeight: 0
                   }}>
                     <ScrollArea style={{ 
                       height: '100%',
                       overflow: 'auto',
                       position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0
+                      inset: 0
                     }}>
-                      <Box style={{ padding: '16px' }}>
-                        <ProgressLog status={null} progressSteps={displayProgressSteps} />
-                      </Box>
+                      <div style={{ padding: '16px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <ProgressLog status={null} progressSteps={progressSteps} />
+                      </div>
                     </ScrollArea>
-                  </Box>
-                )}
-              </Box>
-
-              {/* Right Section - Results */}
-              <ScrollArea ref={rightSectionRef} style={{ 
-                width: '400px', 
-                flexShrink: 0,
-                borderLeft: '1px solid var(--gray-5)',
-                paddingLeft: '16px',
-                minHeight: 0,
-                height: '100%',
-                overflow: 'hidden',
-                position: 'relative'
-              }}>
-                <Flex direction="column" gap="4" style={{ padding: '4px', height: '100%', overflow: 'hidden' }}>
-                  {/* Intent Analysis Result */}
-                  {result?.intent_analysis && showResults.intent && (
-                    <IntentAnalysisResult result={result.intent_analysis} />
-                  )}
-
-                  {/* Question Analysis Result */}
-                  {result?.question_analysis && showResults.question && (
-                    <QuestionAnalysisResult result={result.question_analysis} />
-                  )}
-
-                  {/* Collection Strategy Result */}
-                  {result?.collection_strategy && showResults.strategy && (
-                    <CollectionStrategyResult result={result.collection_strategy} />
-                  )}
-
-                  {/* AI Response Result */}
-                  {result?.ai_response && showResults.ai_response && (
-                    <AIResponseResult result={result.ai_response} />
-                  )}
-                </Flex>
-              </ScrollArea>
-            </Flex>
-          ) : (
-            // Single column layout when there are no results
-            <Flex direction="column" gap="4" style={{ height: '100%', overflow: 'hidden' }}>
-              <DialogueInput 
-                onSubmit={handleSubmit} 
-                isLoading={isLoading} 
-                value={input}
-                onChange={setInput}
-              />
-
-              {error && (
-                <Card style={{ flexShrink: 0 }}>
-                  <Flex direction="column" gap="2">
-                    <Text size="3" weight="bold" color="red">错误信息</Text>
-                    <Text size="2">{error}</Text>
-                  </Flex>
-                </Card>
-              )}
-
-              {/* Progress Steps */}
-              {displayProgressSteps.length > 0 && (
-                <Box style={{ 
-                  flex: 1, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  minHeight: 0,
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}>
-                  <ScrollArea style={{ 
-                    height: '100%',
-                    overflow: 'auto',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0
-                  }}>
-                    <Box style={{ padding: '16px' }}>
-                      <ProgressLog status={null} progressSteps={displayProgressSteps} />
-                    </Box>
-                  </ScrollArea>
-                </Box>
-              )}
-            </Flex>
-          )}
-        </Container>
-      </Box>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </ScrollableBox>
   );
 };
