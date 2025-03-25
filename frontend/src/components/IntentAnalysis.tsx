@@ -131,42 +131,44 @@ const IntentAnalysis: React.FC = () => {
                   />
 
                   {/* Progress Steps Card */}
-                  <div ref={progressCardRef} style={{ 
-                    flex: 1, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    position: 'relative',
-                    overflow: 'hidden',
-                    backgroundColor: 'var(--gray-1)',
-                    border: '1px solid var(--gray-5)',
-                    borderRadius: 'var(--radius-3)',
-                    minHeight: 0
-                  }}>
-                    <div style={{ 
-                      flexShrink: 0,
-                      padding: '16px',
-                      borderBottom: '1px solid var(--gray-5)'
-                    }}>
-                      <Text size="3" weight="bold">分析进度</Text>
-                    </div>
-                    <div style={{ 
-                      flex: 1,
-                      overflow: 'hidden',
+                  {progressSteps.length > 0 && (
+                    <div ref={progressCardRef} style={{ 
+                      flex: 1, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
                       position: 'relative',
+                      overflow: 'hidden',
+                      backgroundColor: 'var(--gray-1)',
+                      border: '1px solid var(--gray-5)',
+                      borderRadius: 'var(--radius-3)',
                       minHeight: 0
                     }}>
-                      <ScrollArea style={{ 
-                        height: '100%',
-                        overflow: 'auto',
-                        position: 'absolute',
-                        inset: 0
+                      <div style={{ 
+                        flexShrink: 0,
+                        padding: '16px',
+                        borderBottom: '1px solid var(--gray-5)'
                       }}>
-                        <div style={{ padding: '16px' }}>
-                          <ProgressLog status={null} progressSteps={progressSteps} />
-                        </div>
-                      </ScrollArea>
+                        <Text size="3" weight="bold">分析进度</Text>
+                      </div>
+                      <div style={{ 
+                        flex: 1,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        minHeight: 0
+                      }}>
+                        <ScrollArea style={{ 
+                          height: '100%',
+                          overflow: 'auto',
+                          position: 'absolute',
+                          inset: 0
+                        }}>
+                          <div style={{ padding: '16px' }}>
+                            <ProgressLog status={null} progressSteps={progressSteps} />
+                          </div>
+                        </ScrollArea>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Right Section - Results */}
@@ -227,45 +229,47 @@ const IntentAnalysis: React.FC = () => {
                 )}
 
                 {/* Progress Steps */}
-                <div style={{ 
-                  flex: 1, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  position: 'relative',
-                  overflow: 'hidden',
-                  backgroundColor: 'var(--gray-1)',
-                  border: '1px solid var(--gray-5)',
-                  borderRadius: 'var(--radius-3)',
-                  minHeight: 0
-                }}>
+                {progressSteps.length > 0 && (
                   <div style={{ 
-                    flexShrink: 0,
-                    padding: '16px',
-                    borderBottom: '1px solid var(--gray-5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: '48px'
-                  }}>
-                    <Text size="3" weight="bold" style={{ lineHeight: '16px' }}>分析进度</Text>
-                  </div>
-                  <div style={{ 
-                    flex: 1,
-                    overflow: 'hidden',
+                    flex: 1, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
                     position: 'relative',
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--gray-1)',
+                    border: '1px solid var(--gray-5)',
+                    borderRadius: 'var(--radius-3)',
                     minHeight: 0
                   }}>
-                    <ScrollArea style={{ 
-                      height: '100%',
-                      overflow: 'auto',
-                      position: 'absolute',
-                      inset: 0
+                    <div style={{ 
+                      flexShrink: 0,
+                      padding: '16px',
+                      borderBottom: '1px solid var(--gray-5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      height: '48px'
                     }}>
-                      <div style={{ padding: '16px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <ProgressLog status={null} progressSteps={progressSteps} />
-                      </div>
-                    </ScrollArea>
+                      <Text size="3" weight="bold" style={{ lineHeight: '16px' }}>分析进度</Text>
+                    </div>
+                    <div style={{ 
+                      flex: 1,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      minHeight: 0
+                    }}>
+                      <ScrollArea style={{ 
+                        height: '100%',
+                        overflow: 'auto',
+                        position: 'absolute',
+                        inset: 0
+                      }}>
+                        <div style={{ padding: '16px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                          <ProgressLog status={null} progressSteps={progressSteps} />
+                        </div>
+                      </ScrollArea>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
