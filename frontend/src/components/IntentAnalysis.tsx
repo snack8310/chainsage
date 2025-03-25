@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, Container, TextField, Button, Flex, Badge, Card } from '@radix-ui/themes';
+import { Box, Text, Container, TextField, Button, Flex, Badge, Card, ScrollArea } from '@radix-ui/themes';
 
 interface IntentResult {
   intent: string;
@@ -38,14 +38,34 @@ interface CollectionStrategy {
   notes: string;
 }
 
+interface AIResponse {
+  response: {
+    main_answer: string;
+    key_points: string[];
+    practical_examples: string[];
+    implementation_steps: string[];
+    common_pitfalls: string[];
+    best_practices: string[];
+    additional_resources: string[];
+  };
+  metadata: {
+    confidence: number;
+    complexity: string;
+    estimated_time: number;
+    target_audience: string;
+    prerequisites: string[];
+  };
+}
+
 interface AnalysisResponse {
   intent_analysis: IntentResult;
   question_analysis: QuestionAnalysis;
   collection_strategy: CollectionStrategy;
+  ai_response: AIResponse;
 }
 
 interface AnalysisStatus {
-  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'error';
+  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'ai_response' | 'error';
   status?: string;
   message?: string;
   data?: any;
@@ -59,6 +79,7 @@ interface AnalysisStatus {
     intent: boolean;
     question: boolean;
     strategy: boolean;
+    ai_response: boolean;
   };
 }
 
@@ -76,7 +97,7 @@ const IntentAnalysis: React.FC = () => {
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
-  const [showResults, setShowResults] = useState({ intent: false, question: false, strategy: false });
+  const [showResults, setShowResults] = useState({ intent: false, question: false, strategy: false, ai_response: false });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +106,7 @@ const IntentAnalysis: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setResult(null);
-    setShowResults({ intent: false, question: false, strategy: false });
+    setShowResults({ intent: false, question: false, strategy: false, ai_response: false });
     setProgressSteps([]);
 
     try {
@@ -149,6 +170,24 @@ const IntentAnalysis: React.FC = () => {
                     approach: '',
                     risk_level: '',
                     notes: '',
+                  },
+                  ai_response: prev?.ai_response || {
+                    response: {
+                      main_answer: '',
+                      key_points: [],
+                      practical_examples: [],
+                      implementation_steps: [],
+                      common_pitfalls: [],
+                      best_practices: [],
+                      additional_resources: []
+                    },
+                    metadata: {
+                      confidence: 0,
+                      complexity: '',
+                      estimated_time: 0,
+                      target_audience: '',
+                      prerequisites: []
+                    }
                   }
                 }));
                 setShowResults(prev => ({ ...prev, intent: true }));
@@ -184,6 +223,24 @@ const IntentAnalysis: React.FC = () => {
                     approach: '',
                     risk_level: '',
                     notes: '',
+                  },
+                  ai_response: prev?.ai_response || {
+                    response: {
+                      main_answer: '',
+                      key_points: [],
+                      practical_examples: [],
+                      implementation_steps: [],
+                      common_pitfalls: [],
+                      best_practices: [],
+                      additional_resources: []
+                    },
+                    metadata: {
+                      confidence: 0,
+                      complexity: '',
+                      estimated_time: 0,
+                      target_audience: '',
+                      prerequisites: []
+                    }
                   }
                 }));
                 setShowResults(prev => ({ ...prev, intent: true }));
@@ -203,6 +260,24 @@ const IntentAnalysis: React.FC = () => {
                     approach: '',
                     risk_level: '',
                     notes: '',
+                  },
+                  ai_response: prev?.ai_response || {
+                    response: {
+                      main_answer: '',
+                      key_points: [],
+                      practical_examples: [],
+                      implementation_steps: [],
+                      common_pitfalls: [],
+                      best_practices: [],
+                      additional_resources: []
+                    },
+                    metadata: {
+                      confidence: 0,
+                      complexity: '',
+                      estimated_time: 0,
+                      target_audience: '',
+                      prerequisites: []
+                    }
                   }
                 }));
                 setShowResults(prev => ({ ...prev, question: true }));
@@ -242,6 +317,24 @@ const IntentAnalysis: React.FC = () => {
                     approach: data.data.partial_approach || prev?.collection_strategy?.approach || '',
                     risk_level: data.data.partial_risk_level || prev?.collection_strategy?.risk_level || '',
                     notes: data.data.partial_notes || prev?.collection_strategy?.notes || '',
+                  },
+                  ai_response: prev?.ai_response || {
+                    response: {
+                      main_answer: '',
+                      key_points: [],
+                      practical_examples: [],
+                      implementation_steps: [],
+                      common_pitfalls: [],
+                      best_practices: [],
+                      additional_resources: []
+                    },
+                    metadata: {
+                      confidence: 0,
+                      complexity: '',
+                      estimated_time: 0,
+                      target_audience: '',
+                      prerequisites: []
+                    }
                   }
                 }));
                 setShowResults(prev => ({ ...prev, strategy: true }));
@@ -274,9 +367,67 @@ const IntentAnalysis: React.FC = () => {
                     },
                     follow_up_questions: []
                   },
-                  collection_strategy: data.data
+                  collection_strategy: data.data,
+                  ai_response: prev?.ai_response || {
+                    response: {
+                      main_answer: '',
+                      key_points: [],
+                      practical_examples: [],
+                      implementation_steps: [],
+                      common_pitfalls: [],
+                      best_practices: [],
+                      additional_resources: []
+                    },
+                    metadata: {
+                      confidence: 0,
+                      complexity: '',
+                      estimated_time: 0,
+                      target_audience: '',
+                      prerequisites: []
+                    }
+                  }
                 }));
                 setShowResults(prev => ({ ...prev, strategy: true }));
+                break;
+              case 'ai_response':
+                setResult(prev => ({
+                  intent_analysis: prev?.intent_analysis || {
+                    intent: '',
+                    confidence: 0,
+                    entities: {},
+                  },
+                  question_analysis: prev?.question_analysis || {
+                    question_analysis: {
+                      clarity: 0,
+                      specificity: 0,
+                      context: 0,
+                      professionalism: 0,
+                      overall_score: 0
+                    },
+                    improvement_suggestions: {
+                      clarity_improvements: [],
+                      specificity_improvements: [],
+                      context_improvements: [],
+                      professionalism_improvements: []
+                    },
+                    best_practices: {
+                      question_structure: '',
+                      key_elements: [],
+                      examples: []
+                    },
+                    follow_up_questions: []
+                  },
+                  collection_strategy: prev?.collection_strategy || {
+                    strategy: '',
+                    priority: '',
+                    timeline: '',
+                    approach: '',
+                    risk_level: '',
+                    notes: '',
+                  },
+                  ai_response: data.data
+                }));
+                setShowResults(prev => ({ ...prev, ai_response: true }));
                 break;
               case 'error':
                 console.error('Error received:', data.message);
@@ -350,7 +501,7 @@ const IntentAnalysis: React.FC = () => {
         minHeight: 0
       }}>
         <Container size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {result && (showResults.intent || showResults.strategy) ? (
+          {result && (showResults.intent || showResults.strategy || showResults.ai_response) ? (
             // Two columns layout when there are results
             <Flex gap="4" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
               {/* Left Section - Input and Progress */}
@@ -401,71 +552,62 @@ const IntentAnalysis: React.FC = () => {
                 </Card>
 
                 {/* Scrollable Area for Error and Progress */}
-                <Box style={{ 
-                  flex: 1,
-                  overflow: 'auto',
-                  minHeight: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px'
-                }}>
-                  {error && (
-                    <Card style={{ flexShrink: 0 }}>
-                      <Flex direction="column" gap="2">
-                        <Text size="3" weight="bold" color="red">错误信息</Text>
-                        <Text size="2">{error}</Text>
-                      </Flex>
-                    </Card>
-                  )}
-
-                  {/* Progress Steps */}
-                  {progressSteps.length > 0 && (
-                    <Card style={{ flexShrink: 0 }}>
-                      <Flex direction="column" gap="3">
-                        <Text size="3" weight="bold">分析进度</Text>
-                        <Flex direction="column" gap="3">
-                          {progressSteps.map((step, index) => (
-                            <Flex key={step.id + index} gap="3" align="center" style={{ flexShrink: 0 }}>
-                              <Box style={{
-                                width: '24px',
-                                height: '24px',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: step.status === 'completed' ? 'var(--green-9)' : 'var(--blue-9)',
-                                color: 'white',
-                                fontSize: '12px',
-                                flexShrink: 0
-                              }}>
-                                {step.status === 'completed' ? '✓' : '⟳'}
-                              </Box>
-                              <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
-                                <Text size="2" weight="bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.title}</Text>
-                                <Text size="2" color="gray" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.description}</Text>
-                              </Flex>
-                            </Flex>
-                          ))}
+                <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+                  <Flex direction="column" gap="4" style={{ padding: '4px' }}>
+                    {error && (
+                      <Card style={{ flexShrink: 0 }}>
+                        <Flex direction="column" gap="2">
+                          <Text size="3" weight="bold" color="red">错误信息</Text>
+                          <Text size="2">{error}</Text>
                         </Flex>
-                      </Flex>
-                    </Card>
-                  )}
-                </Box>
+                      </Card>
+                    )}
+
+                    {/* Progress Steps */}
+                    {progressSteps.length > 0 && (
+                      <Card style={{ flexShrink: 0 }}>
+                        <Flex direction="column" gap="3">
+                          <Text size="3" weight="bold">分析进度</Text>
+                          <Flex direction="column" gap="3">
+                            {progressSteps.map((step, index) => (
+                              <Flex key={step.id + index} gap="3" align="center" style={{ flexShrink: 0 }}>
+                                <Box style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundColor: step.status === 'completed' ? 'var(--green-9)' : 'var(--blue-9)',
+                                  color: 'white',
+                                  fontSize: '12px',
+                                  flexShrink: 0
+                                }}>
+                                  {step.status === 'completed' ? '✓' : '⟳'}
+                                </Box>
+                                <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
+                                  <Text size="2" weight="bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.title}</Text>
+                                  <Text size="2" color="gray" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.description}</Text>
+                                </Flex>
+                              </Flex>
+                            ))}
+                          </Flex>
+                        </Flex>
+                      </Card>
+                    )}
+                  </Flex>
+                </ScrollArea>
               </Box>
 
               {/* Right Section - Results */}
-              <Box style={{ 
+              <ScrollArea style={{ 
                 width: '400px', 
-                overflow: 'auto',
                 flexShrink: 0,
                 borderLeft: '1px solid var(--gray-5)',
                 paddingLeft: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
                 minHeight: 0
               }}>
-                <Flex direction="column" gap="4">
+                <Flex direction="column" gap="4" style={{ padding: '4px' }}>
                   {/* Intent Analysis Result */}
                   {result?.intent_analysis && showResults.intent && (
                     <Card>
@@ -623,8 +765,116 @@ const IntentAnalysis: React.FC = () => {
                       </Flex>
                     </Card>
                   )}
+
+                  {/* AI Response Result */}
+                  {result?.ai_response && showResults.ai_response && (
+                    <Card>
+                      <Flex direction="column" gap="3">
+                        <Text size="3" weight="bold">AI 回答</Text>
+                        
+                        {/* 主要回答 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">主要回答：</Text>
+                          <Text size="2">{result.ai_response.response.main_answer}</Text>
+                        </Box>
+
+                        {/* 关键点 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">关键点：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.ai_response.response.key_points.map((point, index) => (
+                              <Text key={index} size="2">• {point}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 实际案例 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">实际案例：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.ai_response.response.practical_examples.map((example, index) => (
+                              <Text key={index} size="2">• {example}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 实施步骤 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">实施步骤：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.ai_response.response.implementation_steps.map((step, index) => (
+                              <Text key={index} size="2">{index + 1}. {step}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 常见问题 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">常见问题：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.ai_response.response.common_pitfalls.map((pitfall, index) => (
+                              <Text key={index} size="2">• {pitfall}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 最佳实践 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">最佳实践：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.ai_response.response.best_practices.map((practice, index) => (
+                              <Text key={index} size="2">• {practice}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 相关资源 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">相关资源：</Text>
+                          <Flex direction="column" gap="1">
+                            {result.ai_response.response.additional_resources.map((resource, index) => (
+                              <Text key={index} size="2">• {resource}</Text>
+                            ))}
+                          </Flex>
+                        </Box>
+
+                        {/* 元数据信息 */}
+                        <Box>
+                          <Text size="2" weight="bold" mb="2">回答信息：</Text>
+                          <Flex direction="column" gap="2">
+                            <Flex gap="2" align="center">
+                              <Badge color="blue" size="2">置信度:</Badge>
+                              <Text size="2">{(result.ai_response.metadata.confidence * 100).toFixed(1)}%</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="green" size="2">复杂度:</Badge>
+                              <Text size="2">{result.ai_response.metadata.complexity}</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="orange" size="2">阅读时间:</Badge>
+                              <Text size="2">{result.ai_response.metadata.estimated_time}分钟</Text>
+                            </Flex>
+                            <Flex gap="2" align="center">
+                              <Badge color="purple" size="2">目标受众:</Badge>
+                              <Text size="2">{result.ai_response.metadata.target_audience}</Text>
+                            </Flex>
+                            {result.ai_response.metadata.prerequisites.length > 0 && (
+                              <Box>
+                                <Text size="2" weight="bold" mb="1">前置知识：</Text>
+                                <Flex direction="column" gap="1">
+                                  {result.ai_response.metadata.prerequisites.map((prereq, index) => (
+                                    <Text key={index} size="2">• {prereq}</Text>
+                                  ))}
+                                </Flex>
+                              </Box>
+                            )}
+                          </Flex>
+                        </Box>
+                      </Flex>
+                    </Card>
+                  )}
                 </Flex>
-              </Box>
+              </ScrollArea>
             </Flex>
           ) : (
             // Single column layout when there are no results
@@ -676,30 +926,32 @@ const IntentAnalysis: React.FC = () => {
               {/* Progress Steps */}
               {progressSteps.length > 0 && (
                 <Card style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                  <Flex direction="column" gap="3" style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                    {progressSteps.map((step, index) => (
-                      <Flex key={step.id + index} gap="3" align="center" style={{ flexShrink: 0 }}>
-                        <Box style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: step.status === 'completed' ? 'var(--green-9)' : 'var(--blue-9)',
-                          color: 'white',
-                          fontSize: '12px',
-                          flexShrink: 0
-                        }}>
-                          {step.status === 'completed' ? '✓' : '⟳'}
-                        </Box>
-                        <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
-                          <Text size="2" weight="bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.title}</Text>
-                          <Text size="2" color="gray" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.description}</Text>
+                  <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+                    <Flex direction="column" gap="3" style={{ padding: '4px' }}>
+                      {progressSteps.map((step, index) => (
+                        <Flex key={step.id + index} gap="3" align="center" style={{ flexShrink: 0 }}>
+                          <Box style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: step.status === 'completed' ? 'var(--green-9)' : 'var(--blue-9)',
+                            color: 'white',
+                            fontSize: '12px',
+                            flexShrink: 0
+                          }}>
+                            {step.status === 'completed' ? '✓' : '⟳'}
+                          </Box>
+                          <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
+                            <Text size="2" weight="bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.title}</Text>
+                            <Text size="2" color="gray" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.description}</Text>
+                          </Flex>
                         </Flex>
-                      </Flex>
-                    ))}
-                  </Flex>
+                      ))}
+                    </Flex>
+                  </ScrollArea>
                 </Card>
               )}
             </Flex>
