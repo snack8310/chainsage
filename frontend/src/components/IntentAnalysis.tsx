@@ -7,6 +7,67 @@ import { CollectionStrategyResult } from './intent/CollectionStrategyResult';
 import { AIResponseResult } from './intent/AIResponseResult';
 import { DialogueInput } from './intent/DialogueInput';
 import { useIntentAnalysis } from './intent/hooks/useIntentAnalysis';
+import { ProgressStep } from './intent/types';
+
+// Mock data for progress steps
+const mockProgressSteps: ProgressStep[] = [
+  {
+    id: 'step_1',
+    title: '意图分析',
+    description: '正在分析用户输入的意图...',
+    status: 'completed' as const,
+    timestamp: new Date('2024-03-20 10:00:00')
+  },
+  {
+    id: 'step_2',
+    title: '问题分析',
+    description: '分析问题类型和关键信息...',
+    status: 'completed' as const,
+    timestamp: new Date('2024-03-20 10:00:01')
+  },
+  {
+    id: 'step_3',
+    title: '策略生成',
+    description: '生成信息收集策略...',
+    status: 'processing' as const,
+    timestamp: new Date('2024-03-20 10:00:02')
+  },
+  {
+    id: 'step_4',
+    title: 'AI响应',
+    description: '等待生成AI响应...',
+    status: 'processing' as const,
+    timestamp: new Date('2024-03-20 10:00:03')
+  },
+  {
+    id: 'step_5',
+    title: '结果整合',
+    description: '整合分析结果...',
+    status: 'processing' as const,
+    timestamp: new Date('2024-03-20 10:00:04')
+  },
+  {
+    id: 'step_6',
+    title: '反馈优化',
+    description: '优化响应质量...',
+    status: 'processing' as const,
+    timestamp: new Date('2024-03-20 10:00:05')
+  },
+  {
+    id: 'step_7',
+    title: '最终输出',
+    description: '生成最终输出结果...',
+    status: 'processing' as const,
+    timestamp: new Date('2024-03-20 10:00:06')
+  },
+  {
+    id: 'step_8',
+    title: '完成',
+    description: '处理完成',
+    status: 'processing' as const,
+    timestamp: new Date('2024-03-20 10:00:07')
+  }
+];
 
 const ScrollableBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Box style={{ 
@@ -24,6 +85,9 @@ const ScrollableBox: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 const IntentAnalysis: React.FC = () => {
   const [input, setInput] = useState(`如何提高工作效率？`);
   const { isLoading, result, error, progressSteps, showResults, handleSubmit } = useIntentAnalysis();
+
+  // 使用mock数据替换progressSteps
+  const displayProgressSteps = mockProgressSteps;
 
   // Add refs for debugging
   const leftSectionRef = useRef<HTMLDivElement>(null);
@@ -60,10 +124,10 @@ const IntentAnalysis: React.FC = () => {
     logDimensions();
 
     // Log dimensions when progress steps change
-    if (progressSteps.length > 0) {
+    if (displayProgressSteps.length > 0) {
       logDimensions();
     }
-  }, [progressSteps]);
+  }, [displayProgressSteps]);
 
   return (
     <ScrollableBox>
@@ -131,7 +195,7 @@ const IntentAnalysis: React.FC = () => {
                 />
 
                 {/* Progress Steps Card */}
-                {progressSteps.length > 0 && (
+                {displayProgressSteps.length > 0 && (
                   <Box ref={progressCardRef} style={{ 
                     flex: 1, 
                     display: 'flex', 
@@ -140,7 +204,19 @@ const IntentAnalysis: React.FC = () => {
                     position: 'relative',
                     overflow: 'hidden'
                   }}>
-                    <ProgressLog status={null} progressSteps={progressSteps} />
+                    <ScrollArea style={{ 
+                      height: '100%',
+                      overflow: 'auto',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0
+                    }}>
+                      <Box style={{ padding: '16px' }}>
+                        <ProgressLog status={null} progressSteps={displayProgressSteps} />
+                      </Box>
+                    </ScrollArea>
                   </Box>
                 )}
               </Box>
@@ -199,15 +275,28 @@ const IntentAnalysis: React.FC = () => {
               )}
 
               {/* Progress Steps */}
-              {progressSteps.length > 0 && (
+              {displayProgressSteps.length > 0 && (
                 <Box style={{ 
                   flex: 1, 
                   display: 'flex', 
                   flexDirection: 'column', 
                   minHeight: 0,
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  position: 'relative'
                 }}>
-                  <ProgressLog status={null} progressSteps={progressSteps} />
+                  <ScrollArea style={{ 
+                    height: '100%',
+                    overflow: 'auto',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0
+                  }}>
+                    <Box style={{ padding: '16px' }}>
+                      <ProgressLog status={null} progressSteps={displayProgressSteps} />
+                    </Box>
+                  </ScrollArea>
                 </Box>
               )}
             </Flex>
