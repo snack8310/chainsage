@@ -1,95 +1,25 @@
-import React, { useState } from 'react';
-import { Box, Text, Container, TextField, Button, Flex, Badge, Card, ScrollArea } from '@radix-ui/themes';
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Text, Container, Flex, Card, ScrollArea } from '@radix-ui/themes';
+import { ProgressLog } from './intent/ProgressLog';
+import { IntentAnalysisResult } from './intent/IntentAnalysisResult';
+import { QuestionAnalysisResult } from './intent/QuestionAnalysisResult';
+import { CollectionStrategyResult } from './intent/CollectionStrategyResult';
+import { AIResponseResult } from './intent/AIResponseResult';
+import { DialogueInput } from './intent/DialogueInput';
+import { AnalysisStatus, ProgressStep, AnalysisResponse } from './intent/types';
 
-interface IntentResult {
-  intent: string;
-  confidence: number;
-  entities: Record<string, string | string[]>;
-}
-
-interface QuestionAnalysis {
-  question_analysis: {
-    clarity: number;
-    specificity: number;
-    context: number;
-    professionalism: number;
-    overall_score: number;
-  };
-  improvement_suggestions: {
-    clarity_improvements: string[];
-    specificity_improvements: string[];
-    context_improvements: string[];
-    professionalism_improvements: string[];
-  };
-  best_practices: {
-    question_structure: string;
-    key_elements: string[];
-    examples: string[];
-  };
-  follow_up_questions: string[];
-}
-
-interface CollectionStrategy {
-  strategy: string;
-  priority: string;
-  timeline: string;
-  approach: string;
-  risk_level: string;
-  notes: string;
-}
-
-interface AIResponse {
-  response: {
-    main_answer: string;
-    key_points: string[];
-    practical_examples: string[];
-    implementation_steps: string[];
-    common_pitfalls: string[];
-    best_practices: string[];
-    additional_resources: string[];
-  };
-  metadata: {
-    confidence: number;
-    complexity: string;
-    estimated_time: number;
-    target_audience: string;
-    prerequisites: string[];
-  };
-}
-
-interface AnalysisResponse {
-  intent_analysis: IntentResult;
-  question_analysis: QuestionAnalysis;
-  collection_strategy: CollectionStrategy;
-  ai_response: AIResponse;
-}
-
-interface AnalysisStatus {
-  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'ai_response' | 'error';
-  status?: string;
-  message?: string;
-  data?: any;
-  current_step?: {
-    id: string;
-    title: string;
-    description: string;
-    status: 'processing' | 'completed';
-  };
-  show_results?: {
-    intent: boolean;
-    question: boolean;
-    strategy: boolean;
-    ai_response: boolean;
-  };
-}
-
-interface ProgressStep {
-  id: string;
-  title: string;
-  description: string;
-  status: 'processing' | 'completed';
-  timestamp: Date;
-}
+const ScrollableBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Box style={{ 
+    height: '100%',
+    display: 'flex', 
+    flexDirection: 'column',
+    overflow: 'hidden',
+    minHeight: 0,
+    position: 'relative'
+  }}>
+    {children}
+  </Box>
+);
 
 const IntentAnalysis: React.FC = () => {
   const [input, setInput] = useState(`如何提高工作效率？`);
@@ -99,9 +29,48 @@ const IntentAnalysis: React.FC = () => {
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
   const [showResults, setShowResults] = useState({ intent: false, question: false, strategy: false, ai_response: false });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  // Add refs for debugging
+  const leftSectionRef = useRef<HTMLDivElement>(null);
+  const rightSectionRef = useRef<HTMLDivElement>(null);
+  const progressCardRef = useRef<HTMLDivElement>(null);
+
+  // Add effect to log dimensions
+  useEffect(() => {
+    const logDimensions = () => {
+      if (leftSectionRef.current) {
+        console.log('Left Section:', {
+          height: leftSectionRef.current.offsetHeight,
+          scrollHeight: leftSectionRef.current.scrollHeight,
+          clientHeight: leftSectionRef.current.clientHeight
+        });
+      }
+      if (rightSectionRef.current) {
+        console.log('Right Section:', {
+          height: rightSectionRef.current.offsetHeight,
+          scrollHeight: rightSectionRef.current.scrollHeight,
+          clientHeight: rightSectionRef.current.clientHeight
+        });
+      }
+      if (progressCardRef.current) {
+        console.log('Progress Card:', {
+          height: progressCardRef.current.offsetHeight,
+          scrollHeight: progressCardRef.current.scrollHeight,
+          clientHeight: progressCardRef.current.clientHeight
+        });
+      }
+    };
+
+    // Log initial dimensions
+    logDimensions();
+
+    // Log dimensions when progress steps change
+    if (progressSteps.length > 0) {
+      logDimensions();
+    }
+  }, [progressSteps]);
+
+  const handleSubmit = async (question: string) => {
+    if (!question.trim() || isLoading) return;
 
     setIsLoading(true);
     setError(null);
@@ -110,7 +79,7 @@ const IntentAnalysis: React.FC = () => {
     setProgressSteps([]);
 
     try {
-      const eventSource = new EventSource(`/api/v1/analyze-intent?message=${encodeURIComponent(input)}&user_id=default_user&session_id=${Date.now()}`);
+      const eventSource = new EventSource(`/api/v1/analyze-intent?message=${encodeURIComponent(question)}&user_id=default_user&session_id=${Date.now()}`);
       
       eventSource.onmessage = (event) => {
         try {
@@ -474,12 +443,7 @@ const IntentAnalysis: React.FC = () => {
   };
 
   return (
-    <Box style={{ 
-      height: '100%',
-      display: 'flex', 
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
+    <ScrollableBox>
       {/* Header */}
       <Box style={{ 
         borderBottom: '1px solid var(--gray-5)', 
@@ -498,424 +462,112 @@ const IntentAnalysis: React.FC = () => {
         flex: 1,
         overflow: 'hidden',
         padding: '16px 0',
-        minHeight: 0
+        minHeight: 0,
+        height: '100%',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        <Container size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <Container size="3" style={{ 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          minHeight: 0,
+          overflow: 'hidden',
+          position: 'relative',
+          flex: 1
+        }}>
           {result && (showResults.intent || showResults.strategy || showResults.ai_response) ? (
             // Two columns layout when there are results
-            <Flex gap="4" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            <Flex gap="4" style={{ 
+              flex: 1, 
+              minHeight: 0, 
+              overflow: 'hidden',
+              height: '100%',
+              position: 'relative'
+            }}>
               {/* Left Section - Input and Progress */}
-              <Box style={{ 
+              <Box ref={leftSectionRef} style={{ 
                 flex: 1, 
                 display: 'flex',
                 flexDirection: 'column',
                 minWidth: 0,
                 minHeight: 0,
+                height: '100%',
                 paddingRight: '16px',
                 gap: '16px',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative'
               }}>
                 {/* Input Card - Fixed Height */}
-                <Card style={{ flexShrink: 0 }}>
-                  <Flex direction="column" gap="3">
-                    <Text size="3" weight="bold">分析用户意图</Text>
-                    <form onSubmit={handleSubmit}>
-                      <Flex direction="column" gap="3">
-                        <Box style={{
-                          position: 'relative',
-                          width: '100%'
-                        }}>
-                          <textarea
-                            placeholder="输入要分析的文本..."
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            style={{
-                              width: '100%',
-                              height: '150px',
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              border: '1px solid var(--gray-7)',
-                              backgroundColor: 'var(--gray-1)',
-                              fontSize: '14px',
-                              lineHeight: '1.5',
-                              resize: 'none',
-                              fontFamily: 'inherit'
-                            }}
-                          />
-                        </Box>
-                        <Button type="submit" disabled={!input.trim() || isLoading}>
-                          {isLoading ? '分析中...' : '分析意图'}
-                        </Button>
-                      </Flex>
-                    </form>
-                  </Flex>
-                </Card>
+                <DialogueInput 
+                  onSubmit={handleSubmit} 
+                  isLoading={isLoading} 
+                  value={input}
+                  onChange={setInput}
+                />
 
-                {/* Scrollable Area for Error and Progress */}
-                <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-                  <Flex direction="column" gap="4" style={{ padding: '4px' }}>
-                    {error && (
-                      <Card style={{ flexShrink: 0 }}>
-                        <Flex direction="column" gap="2">
-                          <Text size="3" weight="bold" color="red">错误信息</Text>
-                          <Text size="2">{error}</Text>
-                        </Flex>
-                      </Card>
-                    )}
-
-                    {/* Progress Steps */}
-                    {progressSteps.length > 0 && (
-                      <Card style={{ flexShrink: 0 }}>
-                        <Flex direction="column" gap="3">
-                          <Text size="3" weight="bold">分析进度</Text>
-                          <Flex direction="column" gap="3">
-                            {progressSteps.map((step, index) => (
-                              <Flex key={step.id + index} gap="3" align="center" style={{ flexShrink: 0 }}>
-                                <Box style={{
-                                  width: '24px',
-                                  height: '24px',
-                                  borderRadius: '50%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  backgroundColor: step.status === 'completed' ? 'var(--green-9)' : 'var(--blue-9)',
-                                  color: 'white',
-                                  fontSize: '12px',
-                                  flexShrink: 0
-                                }}>
-                                  {step.status === 'completed' ? '✓' : '⟳'}
-                                </Box>
-                                <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
-                                  <Text size="2" weight="bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.title}</Text>
-                                  <Text size="2" color="gray" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.description}</Text>
-                                </Flex>
-                              </Flex>
-                            ))}
-                          </Flex>
-                        </Flex>
-                      </Card>
-                    )}
-                  </Flex>
-                </ScrollArea>
+                {/* Progress Steps Card */}
+                {progressSteps.length > 0 && (
+                  <Box ref={progressCardRef} style={{ 
+                    flex: 1, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    minHeight: 0,
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <ProgressLog status={null} progressSteps={progressSteps} />
+                  </Box>
+                )}
               </Box>
 
               {/* Right Section - Results */}
-              <ScrollArea style={{ 
+              <ScrollArea ref={rightSectionRef} style={{ 
                 width: '400px', 
                 flexShrink: 0,
                 borderLeft: '1px solid var(--gray-5)',
                 paddingLeft: '16px',
-                minHeight: 0
+                minHeight: 0,
+                height: '100%',
+                overflow: 'hidden',
+                position: 'relative'
               }}>
-                <Flex direction="column" gap="4" style={{ padding: '4px' }}>
+                <Flex direction="column" gap="4" style={{ padding: '4px', height: '100%', overflow: 'hidden' }}>
                   {/* Intent Analysis Result */}
                   {result?.intent_analysis && showResults.intent && (
-                    <Card>
-                      <Flex direction="column" gap="3">
-                        <Text size="3" weight="bold">意图分析结果</Text>
-                        <Flex gap="2">
-                          <Badge color="blue" size="2">
-                            意图: {result.intent_analysis.intent}
-                          </Badge>
-                          <Badge color="green" size="2">
-                            置信度: {(result.intent_analysis.confidence * 100).toFixed(1)}%
-                          </Badge>
-                        </Flex>
-                        
-                        {Object.keys(result.intent_analysis.entities).length > 0 && (
-                          <Box>
-                            <Text size="2" weight="bold" mb="2">提取的实体信息：</Text>
-                            <Flex direction="column" gap="2">
-                              {Object.entries(result.intent_analysis.entities).map(([key, value]) => (
-                                <Flex key={key} gap="2" align="center">
-                                  <Badge color="gray" size="2">
-                                    {key}:
-                                  </Badge>
-                                  <Text size="2">
-                                    {Array.isArray(value) ? value.join(', ') : value}
-                                  </Text>
-                                </Flex>
-                              ))}
-                            </Flex>
-                          </Box>
-                        )}
-                      </Flex>
-                    </Card>
+                    <IntentAnalysisResult result={result.intent_analysis} />
                   )}
 
                   {/* Question Analysis Result */}
                   {result?.question_analysis && showResults.question && (
-                    <Card>
-                      <Flex direction="column" gap="3">
-                        <Text size="3" weight="bold">提问分析结果</Text>
-                        
-                        {/* 提问评分 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">提问评分：</Text>
-                          <Flex direction="column" gap="2">
-                            <Flex gap="2" align="center">
-                              <Badge color="blue" size="2">清晰度:</Badge>
-                              <Text size="2">{(result.question_analysis.question_analysis.clarity * 100).toFixed(1)}%</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="green" size="2">具体性:</Badge>
-                              <Text size="2">{(result.question_analysis.question_analysis.specificity * 100).toFixed(1)}%</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="orange" size="2">上下文:</Badge>
-                              <Text size="2">{(result.question_analysis.question_analysis.context * 100).toFixed(1)}%</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="purple" size="2">专业性:</Badge>
-                              <Text size="2">{(result.question_analysis.question_analysis.professionalism * 100).toFixed(1)}%</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="red" size="2">总体评分:</Badge>
-                              <Text size="2">{(result.question_analysis.question_analysis.overall_score * 100).toFixed(1)}%</Text>
-                            </Flex>
-                          </Flex>
-                        </Box>
-
-                        {/* 改进建议 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">改进建议：</Text>
-                          <Flex direction="column" gap="2">
-                            {Object.entries(result.question_analysis.improvement_suggestions).map(([key, suggestions]) => (
-                              <Box key={key}>
-                                <Text size="2" weight="bold" mb="1">{key.replace('_improvements', '')}:</Text>
-                                <Flex direction="column" gap="1">
-                                  {suggestions.map((suggestion, index) => (
-                                    <Text key={index} size="2">• {suggestion}</Text>
-                                  ))}
-                                </Flex>
-                              </Box>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 最佳实践 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">最佳实践：</Text>
-                          <Flex direction="column" gap="2">
-                            <Text size="2" weight="bold">提问结构：</Text>
-                            <Text size="2">{result.question_analysis.best_practices.question_structure}</Text>
-                            
-                            <Text size="2" weight="bold">关键要素：</Text>
-                            <Flex direction="column" gap="1">
-                              {result.question_analysis.best_practices.key_elements.map((element, index) => (
-                                <Text key={index} size="2">• {element}</Text>
-                              ))}
-                            </Flex>
-                            
-                            <Text size="2" weight="bold">示例：</Text>
-                            <Flex direction="column" gap="1">
-                              {result.question_analysis.best_practices.examples.map((example, index) => (
-                                <Text key={index} size="2">• {example}</Text>
-                              ))}
-                            </Flex>
-                          </Flex>
-                        </Box>
-
-                        {/* 跟进问题 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">跟进问题：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.question_analysis.follow_up_questions.map((question, index) => (
-                              <Text key={index} size="2">• {question}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-                      </Flex>
-                    </Card>
+                    <QuestionAnalysisResult result={result.question_analysis} />
                   )}
 
                   {/* Collection Strategy Result */}
                   {result?.collection_strategy && showResults.strategy && (
-                    <Card>
-                      <Flex direction="column" gap="3">
-                        <Text size="3" weight="bold">催收策略建议</Text>
-                        <Flex direction="column" gap="2">
-                          <Flex gap="2" align="center">
-                            <Badge color="blue" size="2">策略:</Badge>
-                            <Text size="2">{result.collection_strategy.strategy}</Text>
-                          </Flex>
-                          <Flex gap="2" align="center">
-                            <Badge color="orange" size="2">优先级:</Badge>
-                            <Text size="2">{result.collection_strategy.priority}</Text>
-                          </Flex>
-                          <Flex gap="2" align="center">
-                            <Badge color="green" size="2">执行时间:</Badge>
-                            <Text size="2">{result.collection_strategy.timeline}</Text>
-                          </Flex>
-                          <Flex gap="2" align="center">
-                            <Badge color="purple" size="2">执行方式:</Badge>
-                            <Text size="2">{result.collection_strategy.approach}</Text>
-                          </Flex>
-                          <Flex gap="2" align="center">
-                            <Badge color="red" size="2">风险等级:</Badge>
-                            <Text size="2">{result.collection_strategy.risk_level}</Text>
-                          </Flex>
-                          {result.collection_strategy.notes && (
-                            <Box mt="2">
-                              <Text size="2" weight="bold" mb="1">注意事项：</Text>
-                              <Text size="2">{result.collection_strategy.notes}</Text>
-                            </Box>
-                          )}
-                        </Flex>
-                      </Flex>
-                    </Card>
+                    <CollectionStrategyResult result={result.collection_strategy} />
                   )}
 
                   {/* AI Response Result */}
                   {result?.ai_response && showResults.ai_response && (
-                    <Card>
-                      <Flex direction="column" gap="3">
-                        <Text size="3" weight="bold">AI 回答</Text>
-                        
-                        {/* 主要回答 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">主要回答：</Text>
-                          <Text size="2">{result.ai_response.response.main_answer}</Text>
-                        </Box>
-
-                        {/* 关键点 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">关键点：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.ai_response.response.key_points.map((point, index) => (
-                              <Text key={index} size="2">• {point}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 实际案例 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">实际案例：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.ai_response.response.practical_examples.map((example, index) => (
-                              <Text key={index} size="2">• {example}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 实施步骤 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">实施步骤：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.ai_response.response.implementation_steps.map((step, index) => (
-                              <Text key={index} size="2">{index + 1}. {step}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 常见问题 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">常见问题：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.ai_response.response.common_pitfalls.map((pitfall, index) => (
-                              <Text key={index} size="2">• {pitfall}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 最佳实践 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">最佳实践：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.ai_response.response.best_practices.map((practice, index) => (
-                              <Text key={index} size="2">• {practice}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 相关资源 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">相关资源：</Text>
-                          <Flex direction="column" gap="1">
-                            {result.ai_response.response.additional_resources.map((resource, index) => (
-                              <Text key={index} size="2">• {resource}</Text>
-                            ))}
-                          </Flex>
-                        </Box>
-
-                        {/* 元数据信息 */}
-                        <Box>
-                          <Text size="2" weight="bold" mb="2">回答信息：</Text>
-                          <Flex direction="column" gap="2">
-                            <Flex gap="2" align="center">
-                              <Badge color="blue" size="2">置信度:</Badge>
-                              <Text size="2">{(result.ai_response.metadata.confidence * 100).toFixed(1)}%</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="green" size="2">复杂度:</Badge>
-                              <Text size="2">{result.ai_response.metadata.complexity}</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="orange" size="2">阅读时间:</Badge>
-                              <Text size="2">{result.ai_response.metadata.estimated_time}分钟</Text>
-                            </Flex>
-                            <Flex gap="2" align="center">
-                              <Badge color="purple" size="2">目标受众:</Badge>
-                              <Text size="2">{result.ai_response.metadata.target_audience}</Text>
-                            </Flex>
-                            {result.ai_response.metadata.prerequisites.length > 0 && (
-                              <Box>
-                                <Text size="2" weight="bold" mb="1">前置知识：</Text>
-                                <Flex direction="column" gap="1">
-                                  {result.ai_response.metadata.prerequisites.map((prereq, index) => (
-                                    <Text key={index} size="2">• {prereq}</Text>
-                                  ))}
-                                </Flex>
-                              </Box>
-                            )}
-                          </Flex>
-                        </Box>
-                      </Flex>
-                    </Card>
+                    <AIResponseResult result={result.ai_response} />
                   )}
                 </Flex>
               </ScrollArea>
             </Flex>
           ) : (
             // Single column layout when there are no results
-            <Flex direction="column" gap="4">
-              <Card>
-                <Flex direction="column" gap="4">
-                  <Text size="3" weight="bold">分析用户意图</Text>
-                  <form onSubmit={handleSubmit}>
-                    <Flex direction="column" gap="3">
-                      <Box style={{
-                        position: 'relative',
-                        width: '100%'
-                      }}>
-                        <textarea
-                          placeholder="输入要分析的文本..."
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          style={{
-                            width: '100%',
-                            minHeight: '200px',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid var(--gray-7)',
-                            backgroundColor: 'var(--gray-1)',
-                            fontSize: '14px',
-                            lineHeight: '1.5',
-                            resize: 'vertical',
-                            fontFamily: 'inherit'
-                          }}
-                        />
-                      </Box>
-                      <Button type="submit" disabled={!input.trim() || isLoading}>
-                        {isLoading ? '分析中...' : '分析意图'}
-                      </Button>
-                    </Flex>
-                  </form>
-                </Flex>
-              </Card>
+            <Flex direction="column" gap="4" style={{ height: '100%', overflow: 'hidden' }}>
+              <DialogueInput 
+                onSubmit={handleSubmit} 
+                isLoading={isLoading} 
+                value={input}
+                onChange={setInput}
+              />
 
               {error && (
-                <Card>
+                <Card style={{ flexShrink: 0 }}>
                   <Flex direction="column" gap="2">
                     <Text size="3" weight="bold" color="red">错误信息</Text>
                     <Text size="2">{error}</Text>
@@ -925,40 +577,21 @@ const IntentAnalysis: React.FC = () => {
 
               {/* Progress Steps */}
               {progressSteps.length > 0 && (
-                <Card style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                  <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-                    <Flex direction="column" gap="3" style={{ padding: '4px' }}>
-                      {progressSteps.map((step, index) => (
-                        <Flex key={step.id + index} gap="3" align="center" style={{ flexShrink: 0 }}>
-                          <Box style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: step.status === 'completed' ? 'var(--green-9)' : 'var(--blue-9)',
-                            color: 'white',
-                            fontSize: '12px',
-                            flexShrink: 0
-                          }}>
-                            {step.status === 'completed' ? '✓' : '⟳'}
-                          </Box>
-                          <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
-                            <Text size="2" weight="bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.title}</Text>
-                            <Text size="2" color="gray" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.description}</Text>
-                          </Flex>
-                        </Flex>
-                      ))}
-                    </Flex>
-                  </ScrollArea>
-                </Card>
+                <Box style={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  minHeight: 0,
+                  overflow: 'hidden'
+                }}>
+                  <ProgressLog status={null} progressSteps={progressSteps} />
+                </Box>
               )}
             </Flex>
           )}
         </Container>
       </Box>
-    </Box>
+    </ScrollableBox>
   );
 };
 
