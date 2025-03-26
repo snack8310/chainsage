@@ -127,26 +127,6 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
             yield f"data: {json.dumps({'type': 'status', 'status': 'question_analysis_skipped', 'message': '非工作方法咨询，跳过提问分析'})}\n\n"
             await asyncio.sleep(0.1)  # 减少等待时间
 
-        # 发送AI回答生成开始的消息
-        yield f"data: {json.dumps({'type': 'status', 'status': 'ai_response_started', 'message': '生成AI回答'})}\n\n"
-        await asyncio.sleep(0.1)  # 减少等待时间
-
-        # 生成AI回答，使用流式响应
-        ai_response = None
-        async for chunk in ai_response_agent.generate_response_stream(context, intent_analysis):
-            if isinstance(chunk, dict):
-                # 如果是回答结果，立即发送
-                yield f"data: {json.dumps({'type': 'ai_response', 'data': chunk})}\n\n"
-                await asyncio.sleep(0.1)  # 减少等待时间
-                ai_response = chunk
-
-        if not ai_response:
-            raise ValueError("AI回答生成失败")
-
-        # 发送AI回答生成完成的消息
-        yield f"data: {json.dumps({'type': 'status', 'status': 'ai_response_completed', 'message': 'AI回答已生成'})}\n\n"
-        await asyncio.sleep(0.1)  # 减少等待时间
-
         # 发送最终完成消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'completed', 'message': '分析完成'})}\n\n"
         await asyncio.sleep(0.1)  # 减少等待时间
