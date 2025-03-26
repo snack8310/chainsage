@@ -4,26 +4,34 @@ export interface IntentResult {
   entities: Record<string, string | string[]>;
 }
 
-export interface QuestionAnalysis {
+export interface QuestionImprovementAdvice {
   question_analysis: {
     clarity: number;
     specificity: number;
     context: number;
     professionalism: number;
     overall_score: number;
+    is_work_method_related: boolean;
   };
   improvement_suggestions: {
     clarity_improvements: string[];
     specificity_improvements: string[];
     context_improvements: string[];
     professionalism_improvements: string[];
+    work_method_specific: string[];
   };
   best_practices: {
     question_structure: string;
     key_elements: string[];
     examples: string[];
+    work_method_focus: string[];
   };
   follow_up_questions: string[];
+  work_method_insights: {
+    current_approach: string;
+    potential_improvements: string[];
+    success_metrics: string[];
+  };
 }
 
 export interface CollectionStrategy {
@@ -56,7 +64,7 @@ export interface AIResponse {
 
 export interface AnalysisResponse {
   intent_analysis: IntentResult;
-  question_analysis: QuestionAnalysis;
+  question_analysis: QuestionImprovementAdvice;
   collection_strategy: CollectionStrategy;
   ai_response: AIResponse;
 }

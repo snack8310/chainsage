@@ -46,6 +46,69 @@ export const useIntentAnalysis = () => {
                     status: 'processing',
                     timestamp: new Date().toISOString()
                   }]);
+                  setResult({
+                    intent_analysis: {
+                      intent: '',
+                      confidence: 0,
+                      entities: {}
+                    },
+                    question_analysis: {
+                      question_analysis: {
+                        clarity: 0,
+                        specificity: 0,
+                        context: 0,
+                        professionalism: 0,
+                        overall_score: 0,
+                        is_work_method_related: false
+                      },
+                      improvement_suggestions: {
+                        clarity_improvements: [],
+                        specificity_improvements: [],
+                        context_improvements: [],
+                        professionalism_improvements: [],
+                        work_method_specific: []
+                      },
+                      best_practices: {
+                        question_structure: '',
+                        key_elements: [],
+                        examples: [],
+                        work_method_focus: []
+                      },
+                      follow_up_questions: [],
+                      work_method_insights: {
+                        current_approach: '',
+                        potential_improvements: [],
+                        success_metrics: []
+                      }
+                    },
+                    collection_strategy: {
+                      strategy: '',
+                      priority: '',
+                      timeline: '',
+                      approach: '',
+                      risk_level: '',
+                      notes: ''
+                    },
+                    ai_response: {
+                      response: {
+                        main_answer: '正在生成回答...',
+                        key_points: [],
+                        practical_examples: [],
+                        implementation_steps: [],
+                        common_pitfalls: [],
+                        best_practices: [],
+                        additional_resources: []
+                      },
+                      metadata: {
+                        confidence: 0,
+                        complexity: '',
+                        estimated_time: 0,
+                        target_audience: '',
+                        prerequisites: []
+                      }
+                    }
+                  });
+                  setShowResults(prev => ({ ...prev, ai_response: true }));
                 } else if (data.status === 'chat_response_completed') {
                   setProgressSteps(prev => prev.map(step => 
                     step.id === 'chat_response' 
@@ -76,20 +139,28 @@ export const useIntentAnalysis = () => {
                       specificity: 0,
                       context: 0,
                       professionalism: 0,
-                      overall_score: 0
+                      overall_score: 0,
+                      is_work_method_related: false
                     },
                     improvement_suggestions: {
                       clarity_improvements: [],
                       specificity_improvements: [],
                       context_improvements: [],
-                      professionalism_improvements: []
+                      professionalism_improvements: [],
+                      work_method_specific: []
                     },
                     best_practices: {
                       question_structure: '',
                       key_elements: [],
-                      examples: []
+                      examples: [],
+                      work_method_focus: []
                     },
-                    follow_up_questions: []
+                    follow_up_questions: [],
+                    work_method_insights: {
+                      current_approach: '',
+                      potential_improvements: [],
+                      success_metrics: []
+                    }
                   },
                   collection_strategy: prev?.collection_strategy || {
                     strategy: '',
@@ -129,20 +200,28 @@ export const useIntentAnalysis = () => {
                       specificity: 0,
                       context: 0,
                       professionalism: 0,
-                      overall_score: 0
+                      overall_score: 0,
+                      is_work_method_related: false
                     },
                     improvement_suggestions: {
                       clarity_improvements: [],
                       specificity_improvements: [],
                       context_improvements: [],
-                      professionalism_improvements: []
+                      professionalism_improvements: [],
+                      work_method_specific: []
                     },
                     best_practices: {
                       question_structure: '',
                       key_elements: [],
-                      examples: []
+                      examples: [],
+                      work_method_focus: []
                     },
-                    follow_up_questions: []
+                    follow_up_questions: [],
+                    work_method_insights: {
+                      current_approach: '',
+                      potential_improvements: [],
+                      success_metrics: []
+                    }
                   },
                   collection_strategy: prev?.collection_strategy || {
                     strategy: '',
@@ -223,20 +302,28 @@ export const useIntentAnalysis = () => {
                       specificity: 0,
                       context: 0,
                       professionalism: 0,
-                      overall_score: 0
+                      overall_score: 0,
+                      is_work_method_related: false
                     },
                     improvement_suggestions: {
                       clarity_improvements: [],
                       specificity_improvements: [],
                       context_improvements: [],
-                      professionalism_improvements: []
+                      professionalism_improvements: [],
+                      work_method_specific: []
                     },
                     best_practices: {
                       question_structure: '',
                       key_elements: [],
-                      examples: []
+                      examples: [],
+                      work_method_focus: []
                     },
-                    follow_up_questions: []
+                    follow_up_questions: [],
+                    work_method_insights: {
+                      current_approach: '',
+                      potential_improvements: [],
+                      success_metrics: []
+                    }
                   },
                   collection_strategy: {
                     strategy: data.data.partial_strategy || prev?.collection_strategy?.strategy || '',
@@ -280,20 +367,28 @@ export const useIntentAnalysis = () => {
                       specificity: 0,
                       context: 0,
                       professionalism: 0,
-                      overall_score: 0
+                      overall_score: 0,
+                      is_work_method_related: false
                     },
                     improvement_suggestions: {
                       clarity_improvements: [],
                       specificity_improvements: [],
                       context_improvements: [],
-                      professionalism_improvements: []
+                      professionalism_improvements: [],
+                      work_method_specific: []
                     },
                     best_practices: {
                       question_structure: '',
                       key_elements: [],
-                      examples: []
+                      examples: [],
+                      work_method_focus: []
                     },
-                    follow_up_questions: []
+                    follow_up_questions: [],
+                    work_method_insights: {
+                      current_approach: '',
+                      potential_improvements: [],
+                      success_metrics: []
+                    }
                   },
                   collection_strategy: data.data,
                   ai_response: prev?.ai_response || {
@@ -317,46 +412,6 @@ export const useIntentAnalysis = () => {
                 }));
                 setShowResults(prev => ({ ...prev, strategy: true }));
                 break;
-              case 'ai_response':
-                setResult(prev => ({
-                  intent_analysis: prev?.intent_analysis || {
-                    intent: '',
-                    confidence: 0,
-                    entities: {},
-                  },
-                  question_analysis: prev?.question_analysis || {
-                    question_analysis: {
-                      clarity: 0,
-                      specificity: 0,
-                      context: 0,
-                      professionalism: 0,
-                      overall_score: 0
-                    },
-                    improvement_suggestions: {
-                      clarity_improvements: [],
-                      specificity_improvements: [],
-                      context_improvements: [],
-                      professionalism_improvements: []
-                    },
-                    best_practices: {
-                      question_structure: '',
-                      key_elements: [],
-                      examples: []
-                    },
-                    follow_up_questions: []
-                  },
-                  collection_strategy: prev?.collection_strategy || {
-                    strategy: '',
-                    priority: '',
-                    timeline: '',
-                    approach: '',
-                    risk_level: '',
-                    notes: '',
-                  },
-                  ai_response: data.data
-                }));
-                setShowResults(prev => ({ ...prev, ai_response: true }));
-                break;
               case 'chat_response':
                 setResult(prev => ({
                   intent_analysis: prev?.intent_analysis || {
@@ -370,20 +425,28 @@ export const useIntentAnalysis = () => {
                       specificity: 0,
                       context: 0,
                       professionalism: 0,
-                      overall_score: 0
+                      overall_score: 0,
+                      is_work_method_related: false
                     },
                     improvement_suggestions: {
                       clarity_improvements: [],
                       specificity_improvements: [],
                       context_improvements: [],
-                      professionalism_improvements: []
+                      professionalism_improvements: [],
+                      work_method_specific: []
                     },
                     best_practices: {
                       question_structure: '',
                       key_elements: [],
-                      examples: []
+                      examples: [],
+                      work_method_focus: []
                     },
-                    follow_up_questions: []
+                    follow_up_questions: [],
+                    work_method_insights: {
+                      current_approach: '',
+                      potential_improvements: [],
+                      success_metrics: []
+                    }
                   },
                   collection_strategy: prev?.collection_strategy || {
                     strategy: '',
@@ -393,9 +456,25 @@ export const useIntentAnalysis = () => {
                     risk_level: '',
                     notes: '',
                   },
-                  ai_response: data.data
+                  ai_response: {
+                    response: {
+                      main_answer: data.data.response?.main_answer || prev?.ai_response?.response?.main_answer || '',
+                      key_points: data.data.response?.key_points || prev?.ai_response?.response?.key_points || [],
+                      practical_examples: data.data.response?.practical_examples || prev?.ai_response?.response?.practical_examples || [],
+                      implementation_steps: data.data.response?.implementation_steps || prev?.ai_response?.response?.implementation_steps || [],
+                      common_pitfalls: data.data.response?.common_pitfalls || prev?.ai_response?.response?.common_pitfalls || [],
+                      best_practices: data.data.response?.best_practices || prev?.ai_response?.response?.best_practices || [],
+                      additional_resources: data.data.response?.additional_resources || prev?.ai_response?.response?.additional_resources || []
+                    },
+                    metadata: {
+                      confidence: data.data.metadata?.confidence || prev?.ai_response?.metadata?.confidence || 0,
+                      complexity: data.data.metadata?.complexity || prev?.ai_response?.metadata?.complexity || '',
+                      estimated_time: data.data.metadata?.estimated_time || prev?.ai_response?.metadata?.estimated_time || 0,
+                      target_audience: data.data.metadata?.target_audience || prev?.ai_response?.metadata?.target_audience || '',
+                      prerequisites: data.data.metadata?.prerequisites || prev?.ai_response?.metadata?.prerequisites || []
+                    }
+                  }
                 }));
-                setShowResults(prev => ({ ...prev, ai_response: true }));
                 break;
               case 'error':
                 console.error('Error received:', data.message);

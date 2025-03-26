@@ -2,9 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Text, Container, Flex, Card, ScrollArea } from '@radix-ui/themes';
 import { ProgressLog } from './intent/ProgressLog';
 import { IntentAnalysisResult } from './intent/IntentAnalysisResult';
-import { QuestionAnalysisResult } from './intent/QuestionAnalysisResult';
-import { CollectionStrategyResult } from './intent/CollectionStrategyResult';
-import { AIResponseResult } from './intent/AIResponseResult';
+import { QuestionImprovementAdvice } from './intent/QuestionImprovementAdvice';
 import { DialogueInput } from './intent/DialogueInput';
 import { useIntentAnalysis } from './intent/hooks/useIntentAnalysis';
 import { ProgressStep } from './intent/types';
@@ -22,6 +20,8 @@ const ScrollableBox: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 );
 
 const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
+  const isGenerating = result.response.main_answer === '正在生成回答...';
+
   return (
     <Card style={{ 
       padding: '16px',
@@ -40,12 +40,15 @@ const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
           }}>
             <Flex direction="column" gap="3">
               {/* 主要回答 */}
-              <Text size="2" style={{ whiteSpace: 'pre-wrap' }}>
+              <Text size="2" style={{ 
+                whiteSpace: 'pre-wrap',
+                color: isGenerating ? 'var(--gray-9)' : 'inherit'
+              }}>
                 {result.response?.main_answer || result.response}
               </Text>
 
               {/* 关键要点 */}
-              {result.response?.key_points && result.response.key_points.length > 0 && (
+              {!isGenerating && result.response?.key_points && result.response.key_points.length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" mb="1">关键要点：</Text>
                   <ul style={{ margin: 0, paddingLeft: '20px' }}>
@@ -59,7 +62,7 @@ const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
               )}
 
               {/* 实际案例 */}
-              {result.response?.practical_examples && result.response.practical_examples.length > 0 && (
+              {!isGenerating && result.response?.practical_examples && result.response.practical_examples.length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" mb="1">实际案例：</Text>
                   <ul style={{ margin: 0, paddingLeft: '20px' }}>
@@ -73,7 +76,7 @@ const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
               )}
 
               {/* 实施步骤 */}
-              {result.response?.implementation_steps && result.response.implementation_steps.length > 0 && (
+              {!isGenerating && result.response?.implementation_steps && result.response.implementation_steps.length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" mb="1">实施步骤：</Text>
                   <ol style={{ margin: 0, paddingLeft: '20px' }}>
@@ -87,7 +90,7 @@ const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
               )}
 
               {/* 常见陷阱 */}
-              {result.response?.common_pitfalls && result.response.common_pitfalls.length > 0 && (
+              {!isGenerating && result.response?.common_pitfalls && result.response.common_pitfalls.length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" mb="1">常见陷阱：</Text>
                   <ul style={{ margin: 0, paddingLeft: '20px' }}>
@@ -101,7 +104,7 @@ const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
               )}
 
               {/* 最佳实践 */}
-              {result.response?.best_practices && result.response.best_practices.length > 0 && (
+              {!isGenerating && result.response?.best_practices && result.response.best_practices.length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" mb="1">最佳实践：</Text>
                   <ul style={{ margin: 0, paddingLeft: '20px' }}>
@@ -115,7 +118,7 @@ const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
               )}
 
               {/* 额外资源 */}
-              {result.response?.additional_resources && result.response.additional_resources.length > 0 && (
+              {!isGenerating && result.response?.additional_resources && result.response.additional_resources.length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" mb="1">额外资源：</Text>
                   <ul style={{ margin: 0, paddingLeft: '20px' }}>
@@ -306,14 +309,9 @@ const IntentAnalysis: React.FC = () => {
                       <IntentAnalysisResult result={result.intent_analysis} />
                     )}
 
-                    {/* Question Analysis Result */}
+                    {/* Question Improvement Advice */}
                     {result?.question_analysis && showResults.question && (
-                      <QuestionAnalysisResult result={result.question_analysis} />
-                    )}
-
-                    {/* Collection Strategy Result */}
-                    {result?.collection_strategy && showResults.strategy && (
-                      <CollectionStrategyResult result={result.collection_strategy} />
+                      <QuestionImprovementAdvice result={result.question_analysis} />
                     )}
                   </Flex>
                 </ScrollArea>
