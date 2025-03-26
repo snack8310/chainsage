@@ -47,33 +47,6 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
             session_id=request.session_id
         )
 
-        # 首先生成标准聊天回答
-        yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_started', 'message': '生成标准回答'})}\n\n"
-        await asyncio.sleep(0.1)
-
-        # 创建一个空的意图分析对象用于生成标准回答
-        empty_intent = IntentAnalysis(
-            intent="",
-            confidence=0.0,
-            entities={}
-        )
-
-        # 生成标准聊天回答
-        chat_response = None
-        async for chunk in ai_response_agent.generate_response_stream(context, empty_intent):
-            if isinstance(chunk, dict):
-                # 如果是回答结果，立即发送
-                yield f"data: {json.dumps({'type': 'chat_response', 'data': chunk})}\n\n"
-                await asyncio.sleep(0.1)
-                chat_response = chunk
-
-        if not chat_response:
-            raise ValueError("标准回答生成失败")
-
-        # 发送标准回答完成的消息
-        yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_completed', 'message': '标准回答已生成'})}\n\n"
-        await asyncio.sleep(0.1)
-
         # 发送意图分析开始的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'intent_analysis_started', 'message': '分析意图'})}\n\n"
         await asyncio.sleep(0.1)  # 减少等待时间
@@ -97,6 +70,26 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
         # 发送意图分析完成的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'intent_analysis_completed', 'message': '意图分析完成'})}\n\n"
         await asyncio.sleep(0.1)  # 减少等待时间
+
+        # 生成标准聊天回答
+        yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_started', 'message': '生成标准回答'})}\n\n"
+        await asyncio.sleep(0.1)
+
+        # 生成标准聊天回答
+        chat_response = None
+        async for chunk in ai_response_agent.generate_response_stream(context, intent_analysis):
+            if isinstance(chunk, dict):
+                # 如果是回答结果，立即发送
+                yield f"data: {json.dumps({'type': 'chat_response', 'data': chunk})}\n\n"
+                await asyncio.sleep(0.1)
+                chat_response = chunk
+
+        if not chat_response:
+            raise ValueError("标准回答生成失败")
+
+        # 发送标准回答完成的消息
+        yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_completed', 'message': '标准回答已生成'})}\n\n"
+        await asyncio.sleep(0.1)
 
         # 检查是否是工作方法相关的咨询
         is_work_method = intent_analysis.entities.get('is_work_method', False)

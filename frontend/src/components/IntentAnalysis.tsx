@@ -217,7 +217,7 @@ const IntentAnalysis: React.FC = () => {
             flexDirection: 'column',
             overflow: 'hidden'
           }}>
-            {result && (showResults.intent || showResults.strategy || showResults.ai_response) ? (
+            {result && (showResults.intent_analysis || showResults.chat_response || showResults.question_analysis) ? (
               // Two columns layout when there are results
               <Flex gap="4" style={{ 
                 flex: 1, 
@@ -297,24 +297,24 @@ const IntentAnalysis: React.FC = () => {
                   position: 'relative'
                 }}>
                   <Flex direction="column" gap="4" style={{ padding: '4px', height: '100%', overflow: 'hidden' }}>
-                    {/* Chat Response - Show when chat_response step starts */}
-                    {progressSteps.some(step => step.id === 'chat_response') && (
-                      <ChatResponse 
-                        result={result?.ai_response} 
-                        isLoading={isLoading && !result?.ai_response}
-                      />
-                    )}
-
-                    {/* Intent Analysis Result - Show when intent_analysis step starts */}
-                    {progressSteps.some(step => step.id.startsWith('intent_analysis')) && (
+                    {/* Intent Analysis Result - Show when intent_analysis is true */}
+                    {showResults.intent_analysis && (
                       <IntentAnalysisResult 
                         result={result?.intent_analysis} 
                         isLoading={isLoading && !result?.intent_analysis}
                       />
                     )}
 
-                    {/* Question Improvement Advice - Show when question_analysis step starts */}
-                    {progressSteps.some(step => step.id.startsWith('question_analysis')) && (
+                    {/* Chat Response - Show when chat_response is true */}
+                    {showResults.chat_response && (
+                      <ChatResponse 
+                        result={result?.ai_response} 
+                        isLoading={isLoading && !result?.ai_response}
+                      />
+                    )}
+
+                    {/* Question Improvement Advice - Show when question_analysis is true */}
+                    {showResults.question_analysis && (
                       <QuestionImprovementAdvice 
                         result={result?.question_analysis} 
                         isLoading={isLoading && !result?.question_analysis}
