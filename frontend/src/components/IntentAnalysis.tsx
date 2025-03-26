@@ -287,7 +287,7 @@ const IntentAnalysis: React.FC = () => {
 
                 {/* Right Section - Results */}
                 <ScrollArea ref={rightSectionRef} style={{ 
-                  width: '400px', 
+                  flex: 1,
                   flexShrink: 0,
                   borderLeft: '1px solid var(--gray-5)',
                   paddingLeft: '16px',
