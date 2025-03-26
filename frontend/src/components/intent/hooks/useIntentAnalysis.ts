@@ -38,6 +38,21 @@ export const useIntentAnalysis = () => {
                   setIsLoading(false);
                   return;
                 }
+                if (data.status === 'chat_response_started') {
+                  setProgressSteps(prev => [...prev, {
+                    id: 'chat_response',
+                    title: '生成回答',
+                    description: '正在生成标准回答...',
+                    status: 'processing',
+                    timestamp: new Date().toISOString()
+                  }]);
+                } else if (data.status === 'chat_response_completed') {
+                  setProgressSteps(prev => prev.map(step => 
+                    step.id === 'chat_response' 
+                      ? { ...step, status: 'completed' }
+                      : step
+                  ));
+                }
                 if (data.status || data.message) {
                   setProgressSteps(prev => [...prev, {
                     id: data.status || 'message',
@@ -303,6 +318,46 @@ export const useIntentAnalysis = () => {
                 setShowResults(prev => ({ ...prev, strategy: true }));
                 break;
               case 'ai_response':
+                setResult(prev => ({
+                  intent_analysis: prev?.intent_analysis || {
+                    intent: '',
+                    confidence: 0,
+                    entities: {},
+                  },
+                  question_analysis: prev?.question_analysis || {
+                    question_analysis: {
+                      clarity: 0,
+                      specificity: 0,
+                      context: 0,
+                      professionalism: 0,
+                      overall_score: 0
+                    },
+                    improvement_suggestions: {
+                      clarity_improvements: [],
+                      specificity_improvements: [],
+                      context_improvements: [],
+                      professionalism_improvements: []
+                    },
+                    best_practices: {
+                      question_structure: '',
+                      key_elements: [],
+                      examples: []
+                    },
+                    follow_up_questions: []
+                  },
+                  collection_strategy: prev?.collection_strategy || {
+                    strategy: '',
+                    priority: '',
+                    timeline: '',
+                    approach: '',
+                    risk_level: '',
+                    notes: '',
+                  },
+                  ai_response: data.data
+                }));
+                setShowResults(prev => ({ ...prev, ai_response: true }));
+                break;
+              case 'chat_response':
                 setResult(prev => ({
                   intent_analysis: prev?.intent_analysis || {
                     intent: '',

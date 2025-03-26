@@ -51,6 +51,37 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, collectio
             session_id=request.session_id
         )
 
+        # 首先生成标准聊天回答
+        yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_started', 'message': '正在生成回答...'})}\n\n"
+        await asyncio.sleep(0.1)
+
+        # 创建一个空的意图分析对象用于生成标准回答
+        empty_intent = IntentAnalysis(
+            intent="",
+            confidence=0.0,
+            entities={}
+        )
+
+        # 生成标准聊天回答
+        chat_response = None
+        async for chunk in ai_response_agent.generate_response_stream(context, empty_intent):
+            if isinstance(chunk, str):
+                # 如果是状态消息，立即发送
+                yield f"data: {json.dumps({'type': 'status', 'message': chunk})}\n\n"
+                await asyncio.sleep(0.1)
+            elif isinstance(chunk, dict):
+                # 如果是回答结果，立即发送
+                yield f"data: {json.dumps({'type': 'chat_response', 'data': chunk})}\n\n"
+                await asyncio.sleep(0.1)
+                chat_response = chunk
+
+        if not chat_response:
+            raise ValueError("标准回答生成失败")
+
+        # 发送标准回答完成的消息
+        yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_completed', 'message': '标准回答生成完成'})}\n\n"
+        await asyncio.sleep(0.1)
+
         # 发送意图分析开始的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'intent_analysis_started', 'message': '正在进行意图分析...'})}\n\n"
         await asyncio.sleep(0.1)  # 减少等待时间

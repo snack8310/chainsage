@@ -62,7 +62,7 @@ export interface AnalysisResponse {
 }
 
 export interface AnalysisStatus {
-  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'ai_response' | 'error';
+  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'ai_response' | 'chat_response' | 'error';
   status?: string;
   message?: string;
   data?: any;
@@ -85,5 +85,5 @@ export interface ProgressStep {
   title: string;
   description: string;
   status: 'processing' | 'completed';
-  timestamp: Date;
+  timestamp: Date | string;
 } 

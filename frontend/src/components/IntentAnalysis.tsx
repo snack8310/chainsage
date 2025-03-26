@@ -21,6 +21,120 @@ const ScrollableBox: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   </div>
 );
 
+const ChatResponse: React.FC<{ result: any }> = ({ result }) => {
+  return (
+    <Card style={{ 
+      padding: '16px',
+      backgroundColor: 'var(--gray-1)',
+      border: '1px solid var(--gray-5)',
+      borderRadius: 'var(--radius-3)'
+    }}>
+      <Flex direction="column" gap="3">
+        <Box>
+          <Text size="3" weight="bold" mb="2">标准回答</Text>
+          <Box style={{ 
+            padding: '12px',
+            backgroundColor: 'var(--gray-2)',
+            borderRadius: 'var(--radius-2)',
+            border: '1px solid var(--gray-4)'
+          }}>
+            <Flex direction="column" gap="3">
+              {/* 主要回答 */}
+              <Text size="2" style={{ whiteSpace: 'pre-wrap' }}>
+                {result.response?.main_answer || result.response}
+              </Text>
+
+              {/* 关键要点 */}
+              {result.response?.key_points && result.response.key_points.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="1">关键要点：</Text>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {result.response.key_points.map((point: string, index: number) => (
+                      <li key={index}>
+                        <Text size="2">{point}</Text>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+
+              {/* 实际案例 */}
+              {result.response?.practical_examples && result.response.practical_examples.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="1">实际案例：</Text>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {result.response.practical_examples.map((example: string, index: number) => (
+                      <li key={index}>
+                        <Text size="2">{example}</Text>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+
+              {/* 实施步骤 */}
+              {result.response?.implementation_steps && result.response.implementation_steps.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="1">实施步骤：</Text>
+                  <ol style={{ margin: 0, paddingLeft: '20px' }}>
+                    {result.response.implementation_steps.map((step: string, index: number) => (
+                      <li key={index}>
+                        <Text size="2">{step}</Text>
+                      </li>
+                    ))}
+                  </ol>
+                </Box>
+              )}
+
+              {/* 常见陷阱 */}
+              {result.response?.common_pitfalls && result.response.common_pitfalls.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="1">常见陷阱：</Text>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {result.response.common_pitfalls.map((pitfall: string, index: number) => (
+                      <li key={index}>
+                        <Text size="2">{pitfall}</Text>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+
+              {/* 最佳实践 */}
+              {result.response?.best_practices && result.response.best_practices.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="1">最佳实践：</Text>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {result.response.best_practices.map((practice: string, index: number) => (
+                      <li key={index}>
+                        <Text size="2">{practice}</Text>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+
+              {/* 额外资源 */}
+              {result.response?.additional_resources && result.response.additional_resources.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="1">额外资源：</Text>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {result.response.additional_resources.map((resource: string, index: number) => (
+                      <li key={index}>
+                        <Text size="2">{resource}</Text>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+            </Flex>
+          </Box>
+        </Box>
+      </Flex>
+    </Card>
+  );
+};
+
 const IntentAnalysis: React.FC = () => {
   const [input, setInput] = useState(`如何提高工作效率？`);
   const { isLoading, result, error, progressSteps, showResults, handleSubmit } = useIntentAnalysis();
@@ -182,6 +296,11 @@ const IntentAnalysis: React.FC = () => {
                   position: 'relative'
                 }}>
                   <Flex direction="column" gap="4" style={{ padding: '4px', height: '100%', overflow: 'hidden' }}>
+                    {/* Chat Response */}
+                    {result?.ai_response && showResults.ai_response && (
+                      <ChatResponse result={result.ai_response} />
+                    )}
+
                     {/* Intent Analysis Result */}
                     {result?.intent_analysis && showResults.intent && (
                       <IntentAnalysisResult result={result.intent_analysis} />
@@ -195,11 +314,6 @@ const IntentAnalysis: React.FC = () => {
                     {/* Collection Strategy Result */}
                     {result?.collection_strategy && showResults.strategy && (
                       <CollectionStrategyResult result={result.collection_strategy} />
-                    )}
-
-                    {/* AI Response Result */}
-                    {result?.ai_response && showResults.ai_response && (
-                      <AIResponseResult result={result.ai_response} />
                     )}
                   </Flex>
                 </ScrollArea>
