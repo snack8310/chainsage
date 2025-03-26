@@ -3,10 +3,11 @@ import { Box, Card, Text, Flex } from '@radix-ui/themes';
 import { IntentResult } from './types';
 
 interface IntentAnalysisResultProps {
-  result: IntentResult;
+  result?: IntentResult;
+  isLoading?: boolean;
 }
 
-export const IntentAnalysisResult: React.FC<IntentAnalysisResultProps> = ({ result }) => {
+export const IntentAnalysisResult: React.FC<IntentAnalysisResultProps> = ({ result, isLoading = false }) => {
   return (
     <Card style={{ 
       padding: '16px',
@@ -29,7 +30,7 @@ export const IntentAnalysisResult: React.FC<IntentAnalysisResultProps> = ({ resu
                   识别到的意图：
                 </Text>
                 <Text size="2" style={{ color: 'var(--blue-9)' }}>
-                  {result.intent}
+                  {isLoading ? '正在分析...' : (result?.intent || '')}
                 </Text>
               </Flex>
               <Flex align="center" gap="2">
@@ -37,10 +38,10 @@ export const IntentAnalysisResult: React.FC<IntentAnalysisResultProps> = ({ resu
                   置信度：
                 </Text>
                 <Text size="2" style={{ color: 'var(--green-9)' }}>
-                  {(result.confidence * 100).toFixed(1)}%
+                  {isLoading ? '计算中...' : `${((result?.confidence || 0) * 100).toFixed(1)}%`}
                 </Text>
               </Flex>
-              {Object.keys(result.entities).length > 0 && (
+              {!isLoading && result && Object.keys(result.entities).length > 0 && (
                 <Box>
                   <Text size="2" weight="bold" style={{ color: 'var(--gray-12)' }} mb="1">
                     识别到的实体：

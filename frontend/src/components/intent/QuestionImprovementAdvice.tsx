@@ -3,10 +3,11 @@ import { Box, Text, Card, Flex } from '@radix-ui/themes';
 import { QuestionImprovementAdvice as QuestionImprovementAdviceType } from './types';
 
 interface QuestionImprovementAdviceProps {
-  result: QuestionImprovementAdviceType;
+  result?: QuestionImprovementAdviceType;
+  isLoading?: boolean;
 }
 
-export const QuestionImprovementAdvice: React.FC<QuestionImprovementAdviceProps> = ({ result }) => {
+export const QuestionImprovementAdvice: React.FC<QuestionImprovementAdviceProps> = ({ result, isLoading = false }) => {
   return (
     <Card style={{ 
       padding: '16px',
@@ -24,86 +25,111 @@ export const QuestionImprovementAdvice: React.FC<QuestionImprovementAdviceProps>
             border: '1px solid var(--gray-4)'
           }}>
             <Flex direction="column" gap="3">
-              {/* 提问质量评分 */}
+              {/* 评分详情 */}
               <Box>
-                <Text size="2" weight="bold" mb="1">提问质量评分：</Text>
-                <Flex gap="2" wrap="wrap">
-                  <Box>
-                    <Text size="2">清晰度：{result.question_analysis.clarity.toFixed(2)}</Text>
-                  </Box>
-                  <Box>
-                    <Text size="2">具体性：{result.question_analysis.specificity.toFixed(2)}</Text>
-                  </Box>
-                  <Box>
-                    <Text size="2">上下文：{result.question_analysis.context.toFixed(2)}</Text>
-                  </Box>
-                  <Box>
-                    <Text size="2">专业性：{result.question_analysis.professionalism.toFixed(2)}</Text>
-                  </Box>
-                  <Box>
-                    <Text size="2" weight="bold">总体评分：{result.question_analysis.overall_score.toFixed(2)}</Text>
-                  </Box>
+                <Text size="2" weight="bold" mb="2">评分详情</Text>
+                <Flex direction="column" gap="2">
+                  <Flex align="center" gap="2">
+                    <Text size="2" style={{ color: 'var(--gray-11)' }}>清晰度：</Text>
+                    <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                      {isLoading ? '分析中...' : (result?.question_analysis?.clarity || 0)}
+                    </Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <Text size="2" style={{ color: 'var(--gray-11)' }}>具体性：</Text>
+                    <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                      {isLoading ? '分析中...' : (result?.question_analysis?.specificity || 0)}
+                    </Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <Text size="2" style={{ color: 'var(--gray-11)' }}>上下文：</Text>
+                    <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                      {isLoading ? '分析中...' : (result?.question_analysis?.context || 0)}
+                    </Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <Text size="2" style={{ color: 'var(--gray-11)' }}>专业性：</Text>
+                    <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                      {isLoading ? '分析中...' : (result?.question_analysis?.professionalism || 0)}
+                    </Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <Text size="2" style={{ color: 'var(--gray-11)' }}>总分：</Text>
+                    <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                      {isLoading ? '计算中...' : (result?.question_analysis?.overall_score || 0)}
+                    </Text>
+                  </Flex>
                 </Flex>
               </Box>
 
               {/* 改进建议 */}
-              <Box>
-                <Text size="2" weight="bold" mb="1">改进建议：</Text>
-                <Flex direction="column" gap="2">
-                  {result.improvement_suggestions.clarity_improvements.map((suggestion, index) => (
-                    <Text key={index} size="2">• {suggestion}</Text>
-                  ))}
-                </Flex>
-              </Box>
+              {!isLoading && result?.improvement_suggestions && (
+                <Box>
+                  <Text size="2" weight="bold" mb="2">改进建议</Text>
+                  <Flex direction="column" gap="2">
+                    {Object.entries(result.improvement_suggestions).map(([key, suggestions]) => (
+                      <Box key={key}>
+                        <Text size="2" style={{ color: 'var(--gray-11)' }} mb="1">
+                          {key.replace('_improvements', '')}：
+                        </Text>
+                        <Flex direction="column" gap="1">
+                          {suggestions.map((suggestion, index) => (
+                            <Text key={index} size="2" style={{ color: 'var(--gray-12)' }}>
+                              • {suggestion}
+                            </Text>
+                          ))}
+                        </Flex>
+                      </Box>
+                    ))}
+                  </Flex>
+                </Box>
+              )}
 
               {/* 最佳实践 */}
-              <Box>
-                <Text size="2" weight="bold" mb="1">最佳实践：</Text>
-                <Flex direction="column" gap="2">
-                  <Text size="2">建议的提问结构：{result.best_practices.question_structure}</Text>
-                  <Box>
-                    <Text size="2" weight="bold" mb="1">关键要素：</Text>
-                    {result.best_practices.key_elements.map((element, index) => (
-                      <Text key={index} size="2">• {element}</Text>
-                    ))}
-                  </Box>
-                  <Box>
-                    <Text size="2" weight="bold" mb="1">示例：</Text>
-                    {result.best_practices.examples.map((example, index) => (
-                      <Text key={index} size="2">• {example}</Text>
-                    ))}
-                  </Box>
-                </Flex>
-              </Box>
-
-              {/* 跟进问题 */}
-              <Box>
-                <Text size="2" weight="bold" mb="1">跟进问题：</Text>
-                <Flex direction="column" gap="2">
-                  {result.follow_up_questions.map((question, index) => (
-                    <Text key={index} size="2">• {question}</Text>
-                  ))}
-                </Flex>
-              </Box>
-
-              {/* 工作方法洞察 */}
-              {result.question_analysis.is_work_method_related && (
+              {!isLoading && result?.best_practices && (
                 <Box>
-                  <Text size="2" weight="bold" mb="1">工作方法洞察：</Text>
+                  <Text size="2" weight="bold" mb="2">最佳实践</Text>
                   <Flex direction="column" gap="2">
-                    <Text size="2">当前方法分析：{result.work_method_insights.current_approach}</Text>
                     <Box>
-                      <Text size="2" weight="bold" mb="1">可能的改进方向：</Text>
-                      {result.work_method_insights.potential_improvements.map((improvement, index) => (
-                        <Text key={index} size="2">• {improvement}</Text>
-                      ))}
+                      <Text size="2" style={{ color: 'var(--gray-11)' }} mb="1">问题结构：</Text>
+                      <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                        {result.best_practices.question_structure}
+                      </Text>
                     </Box>
                     <Box>
-                      <Text size="2" weight="bold" mb="1">成功指标：</Text>
-                      {result.work_method_insights.success_metrics.map((metric, index) => (
-                        <Text key={index} size="2">• {metric}</Text>
-                      ))}
+                      <Text size="2" style={{ color: 'var(--gray-11)' }} mb="1">关键要素：</Text>
+                      <Flex direction="column" gap="1">
+                        {result.best_practices.key_elements.map((element, index) => (
+                          <Text key={index} size="2" style={{ color: 'var(--gray-12)' }}>
+                            • {element}
+                          </Text>
+                        ))}
+                      </Flex>
                     </Box>
+                    <Box>
+                      <Text size="2" style={{ color: 'var(--gray-11)' }} mb="1">示例：</Text>
+                      <Flex direction="column" gap="1">
+                        {result.best_practices.examples.map((example, index) => (
+                          <Text key={index} size="2" style={{ color: 'var(--gray-12)' }}>
+                            • {example}
+                          </Text>
+                        ))}
+                      </Flex>
+                    </Box>
+                  </Flex>
+                </Box>
+              )}
+
+              {/* 后续问题 */}
+              {!isLoading && result?.follow_up_questions && result.follow_up_questions.length > 0 && (
+                <Box>
+                  <Text size="2" weight="bold" mb="2">后续问题</Text>
+                  <Flex direction="column" gap="1">
+                    {result.follow_up_questions.map((question, index) => (
+                      <Text key={index} size="2" style={{ color: 'var(--gray-12)' }}>
+                        • {question}
+                      </Text>
+                    ))}
                   </Flex>
                 </Box>
               )}

@@ -127,6 +127,13 @@ export const useIntentAnalysis = () => {
                 }
                 break;
               case 'intent_analysis_progress':
+                setProgressSteps(prev => [...prev, {
+                  id: 'intent_analysis_started',
+                  title: '意图分析',
+                  description: '正在分析问题意图...',
+                  status: 'processing',
+                  timestamp: new Date().toISOString()
+                }]);
                 setResult(prev => ({
                   intent_analysis: {
                     intent: data.data.partial_intent || prev?.intent_analysis?.intent || '',
@@ -192,6 +199,11 @@ export const useIntentAnalysis = () => {
                 setShowResults(prev => ({ ...prev, intent: true }));
                 break;
               case 'intent_analysis':
+                setProgressSteps(prev => prev.map(step => 
+                  step.id === 'intent_analysis_started' 
+                    ? { ...step, status: 'completed' }
+                    : step
+                ));
                 setResult(prev => ({
                   intent_analysis: data.data,
                   question_analysis: prev?.question_analysis || {
@@ -253,6 +265,13 @@ export const useIntentAnalysis = () => {
                 setShowResults(prev => ({ ...prev, intent: true }));
                 break;
               case 'question_analysis':
+                setProgressSteps(prev => [...prev, {
+                  id: 'question_analysis_started',
+                  title: '提问分析',
+                  description: '正在分析提问质量...',
+                  status: 'processing',
+                  timestamp: new Date().toISOString()
+                }]);
                 setResult(prev => ({
                   intent_analysis: prev?.intent_analysis || {
                     intent: '',
