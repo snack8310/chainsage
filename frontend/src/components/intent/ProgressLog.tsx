@@ -10,6 +10,9 @@ interface ProgressLogProps {
 export const ProgressLog: React.FC<ProgressLogProps> = ({ status, progressSteps }) => {
   console.log('ProgressLog received steps:', progressSteps); // Add debug log
 
+  // Check if all steps are completed
+  const isAllCompleted = progressSteps.length > 0 && progressSteps.every(step => step.status === 'completed');
+
   return (
     <div style={{ 
       height: '100%',
@@ -42,6 +45,21 @@ export const ProgressLog: React.FC<ProgressLogProps> = ({ status, progressSteps 
           </Flex>
         </div>
       ))}
+      {isAllCompleted && (
+        <div style={{
+          padding: '12px',
+          backgroundColor: 'var(--green-2)',
+          borderRadius: 'var(--radius-2)',
+          border: '1px solid var(--green-4)',
+          marginTop: '8px'
+        }}>
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold" style={{ color: 'var(--green-9)' }}>
+              分析完成
+            </Text>
+          </Flex>
+        </div>
+      )}
     </div>
   );
 }; 

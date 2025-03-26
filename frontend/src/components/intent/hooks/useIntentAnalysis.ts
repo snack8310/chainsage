@@ -34,6 +34,10 @@ export const useIntentAnalysis = () => {
             switch (data.type) {
               case 'status':
                 if (data.status === 'completed') {
+                  setProgressSteps(prev => prev.map(step => ({
+                    ...step,
+                    status: 'completed'
+                  })));
                   eventSource.close();
                   setIsLoading(false);
                   return;
