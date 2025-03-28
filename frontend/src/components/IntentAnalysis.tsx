@@ -3,6 +3,7 @@ import { Box, Text, Container, Flex, Card, ScrollArea } from '@radix-ui/themes';
 import { ProgressLog } from './intent/ProgressLog';
 import { IntentAnalysisResult } from './intent/IntentAnalysisResult';
 import { QuestionImprovementAdvice } from './intent/QuestionImprovementAdvice';
+import { CourseRecommendations } from './intent/CourseRecommendations';
 import { DialogueInput } from './intent/DialogueInput';
 import { useIntentAnalysis } from './intent/hooks/useIntentAnalysis';
 import { ProgressStep } from './intent/types';
@@ -318,6 +319,14 @@ const IntentAnalysis: React.FC = () => {
                       <QuestionImprovementAdvice 
                         result={result?.question_analysis} 
                         isLoading={isLoading && !result?.question_analysis}
+                      />
+                    )}
+
+                    {/* Course Recommendations - Show when course_recommendations is true */}
+                    {showResults.course_recommendations && (
+                      <CourseRecommendations 
+                        result={result?.course_recommendations} 
+                        isLoading={isLoading && !result?.course_recommendations}
                       />
                     )}
                   </Flex>

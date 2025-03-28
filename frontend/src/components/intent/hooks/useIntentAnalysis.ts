@@ -54,6 +54,22 @@ interface AnalysisResult {
       prerequisites: string[];
     };
   };
+  course_recommendations?: {
+    recommendations: Array<{
+      title: string;
+      relevance_score: number;
+      summary: string;
+      source: string;
+      page: number;
+    }>;
+    metadata: {
+      total_courses: number;
+      query_context: {
+        intent: string;
+        confidence: number;
+      };
+    };
+  };
 }
 
 export const useIntentAnalysis = () => {
@@ -88,7 +104,8 @@ export const useIntentAnalysis = () => {
   const [showResults, setShowResults] = useState({
     intent_analysis: false,
     chat_response: false,
-    question_analysis: false
+    question_analysis: false,
+    course_recommendations: false
   });
 
   const handleSubmit = async (question: string) => {
@@ -98,7 +115,8 @@ export const useIntentAnalysis = () => {
     setShowResults({
       intent_analysis: false,
       chat_response: false,
-      question_analysis: false
+      question_analysis: false,
+      course_recommendations: false
     });
 
     try {
@@ -181,6 +199,23 @@ export const useIntentAnalysis = () => {
                     status: 'completed',
                     timestamp: new Date()
                   }]);
+                } else if (data.status === 'course_recommendation_started') {
+                  console.log('Course recommendation started');
+                  setProgressSteps(prev => [...prev, {
+                    id: 'course_recommendation',
+                    title: '课程推荐',
+                    description: '正在分析相关课程...',
+                    status: 'processing',
+                    timestamp: new Date()
+                  }]);
+                  setShowResults(prev => ({ ...prev, course_recommendations: true }));
+                } else if (data.status === 'course_recommendation_completed') {
+                  console.log('Course recommendation completed');
+                  setProgressSteps(prev => prev.map(step => 
+                    step.id === 'course_recommendation' 
+                      ? { ...step, status: 'completed' }
+                      : step
+                  ));
                 }
                 break;
               case 'intent_analysis_progress':
@@ -235,6 +270,14 @@ export const useIntentAnalysis = () => {
                   question_analysis: data.data
                 }));
                 setShowResults(prev => ({ ...prev, question_analysis: true }));
+                break;
+              case 'course_recommendation':
+                console.log('Course recommendation:', data.data);
+                setResult(prev => ({
+                  ...prev,
+                  course_recommendations: data.data
+                }));
+                setShowResults(prev => ({ ...prev, course_recommendations: true }));
                 break;
               case 'error':
                 console.error('Error received:', data.message);

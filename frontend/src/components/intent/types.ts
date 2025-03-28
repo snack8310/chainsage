@@ -69,8 +69,9 @@ export interface AnalysisResponse {
   ai_response: AIResponse;
 }
 
-export interface AnalysisStatus {
-  type: 'status' | 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 'collection_strategy' | 'collection_strategy_progress' | 'ai_response' | 'chat_response' | 'error';
+export type AnalysisStatus = {
+  type: 'intent_analysis' | 'intent_analysis_progress' | 'question_analysis' | 
+        'chat_response' | 'error' | 'status' | 'course_recommendation';
   status?: string;
   message?: string;
   data?: any;
@@ -86,7 +87,7 @@ export interface AnalysisStatus {
     strategy: boolean;
     ai_response: boolean;
   };
-}
+};
 
 export interface ProgressStep {
   id: string;
