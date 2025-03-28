@@ -1,4 +1,4 @@
-# Aurora API
+# Chainsage API
 
 这是一个基于FastAPI和OpenAI的智能对话系统后端API。
 

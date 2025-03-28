@@ -66,7 +66,7 @@ const Chat: React.FC = () => {
       <Box style={{ borderBottom: '1px solid var(--gray-5)', padding: '16px' }}>
         <Container size="3">
           <Flex align="center" justify="center">
-            <Text size="5" weight="bold">Aurora Chat</Text>
+            <Text size="5" weight="bold">Chainsage Chat</Text>
           </Flex>
         </Container>
       </Box>
@@ -82,7 +82,7 @@ const Chat: React.FC = () => {
                   fallback="A"
                   color="blue"
                 />
-                <Text size="6" weight="bold">Welcome to Aurora</Text>
+                <Text size="6" weight="bold">Welcome to Chainsage</Text>
                 <Text size="2" color="gray">Start a conversation by typing a message below.</Text>
               </Flex>
             ) : (

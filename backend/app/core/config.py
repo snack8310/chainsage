@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     BGE_BASE_URL: str = "http://stark-vector.x-amc.wke-office.test.wacai.info"
     
     # 应用配置
-    APP_NAME: str = "Aurora API"
+    APP_NAME: str = "Chainsage API"
     DEBUG: bool = False
     
     # Qdrant 配置
