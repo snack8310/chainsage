@@ -278,6 +278,27 @@ export const useIntentAnalysis = () => {
                   course_recommendations: data.data
                 }));
                 setShowResults(prev => ({ ...prev, course_recommendations: true }));
+
+                if (data.data.logs && data.data.logs.length > 0) {
+                  setProgressSteps(prev => prev.map(step => {
+                    if (step.id === 'course_recommendation') {
+                      const searchLogs = data.data.logs.filter((log: string) => 
+                        log.includes('正在搜索课程:') || 
+                        log.includes('找到相关内容 - 课程:') ||
+                        log.includes('搜索完成，找到')
+                      );
+
+                      if (searchLogs.length > 0) {
+                        return {
+                          ...step,
+                          description: searchLogs.join('\n'),
+                          status: 'processing'
+                        };
+                      }
+                    }
+                    return step;
+                  }));
+                }
                 break;
               case 'error':
                 console.error('Error received:', data.message);

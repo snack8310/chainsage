@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Flex } from '@radix-ui/themes';
+import { Text, Flex, ScrollArea } from '@radix-ui/themes';
 import { ProgressStep } from './types';
 
 interface ProgressLogProps {
@@ -39,9 +39,15 @@ export const ProgressLog: React.FC<ProgressLogProps> = ({ status, progressSteps 
                 {step.status === 'completed' ? '已完成' : '处理中'}
               </Text>
             </Flex>
-            <Text size="2" style={{ color: 'var(--gray-11)' }}>
-              {step.description}
-            </Text>
+            <ScrollArea style={{ maxHeight: '150px' }}>
+              <Text size="2" style={{ 
+                color: 'var(--gray-11)',
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'monospace'
+              }}>
+                {step.description}
+              </Text>
+            </ScrollArea>
           </Flex>
         </div>
       ))}

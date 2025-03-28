@@ -325,7 +325,7 @@ const IntentAnalysis: React.FC = () => {
                     {/* Course Recommendations - Show when course_recommendations is true */}
                     {showResults.course_recommendations && (
                       <CourseRecommendations 
-                        result={result?.course_recommendations} 
+                        result={result?.course_recommendations || null} 
                         isLoading={isLoading && !result?.course_recommendations}
                       />
                     )}
