@@ -95,4 +95,26 @@ export interface ProgressStep {
   description: string;
   status: 'processing' | 'completed';
   timestamp: Date | string;
+}
+
+export interface CourseRecommendation {
+  title: string;
+  relevance_score: number;
+  summary: string;
+  source: string;
+  page: number;
+}
+
+export interface CourseRecommendationResponse {
+  data: {
+    recommendations: CourseRecommendation[];
+    metadata: {
+      total_courses: number;
+      query_context: {
+        intent: string;
+        confidence: number;
+      };
+    };
+    logs?: string[];
+  };
 } 

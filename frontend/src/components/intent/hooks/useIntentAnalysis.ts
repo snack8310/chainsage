@@ -55,18 +55,20 @@ interface AnalysisResult {
     };
   };
   course_recommendations?: {
-    recommendations: Array<{
-      title: string;
-      relevance_score: number;
-      summary: string;
-      source: string;
-      page: number;
-    }>;
-    metadata: {
-      total_courses: number;
-      query_context: {
-        intent: string;
-        confidence: number;
+    data: {
+      recommendations: Array<{
+        title: string;
+        relevance_score: number;
+        summary: string;
+        source: string;
+        page: number;
+      }>;
+      metadata: {
+        total_courses: number;
+        query_context: {
+          intent: string;
+          confidence: number;
+        };
       };
     };
   };
@@ -273,32 +275,7 @@ export const useIntentAnalysis = () => {
                 break;
               case 'course_recommendation':
                 console.log('Course recommendation:', data.data);
-                setResult(prev => ({
-                  ...prev,
-                  course_recommendations: data.data
-                }));
-                setShowResults(prev => ({ ...prev, course_recommendations: true }));
-
-                if (data.data.logs && data.data.logs.length > 0) {
-                  setProgressSteps(prev => prev.map(step => {
-                    if (step.id === 'course_recommendation') {
-                      const searchLogs = data.data.logs.filter((log: string) => 
-                        log.includes('正在搜索课程:') || 
-                        log.includes('找到相关内容 - 课程:') ||
-                        log.includes('搜索完成，找到')
-                      );
-
-                      if (searchLogs.length > 0) {
-                        return {
-                          ...step,
-                          description: searchLogs.join('\n'),
-                          status: 'processing'
-                        };
-                      }
-                    }
-                    return step;
-                  }));
-                }
+                handleCourseRecommendation(data);
                 break;
               case 'error':
                 console.error('Error received:', data.message);
@@ -337,6 +314,43 @@ export const useIntentAnalysis = () => {
       setError('系统分析出错，请重试');
       setIsLoading(false);
     }
+  };
+
+  const handleCourseRecommendation = (data: any) => {
+    const courseData = data.data?.data || data.data;
+    
+    if (courseData.logs) {
+      setProgressSteps(prev => prev.map(step => {
+        if (step.id === 'course_recommendation') {
+          return {
+            ...step,
+            description: courseData.logs.join('\n'),
+            status: 'processing'
+          };
+        }
+        return step;
+      }));
+    }
+    
+    setResult(prev => ({
+      ...prev,
+      course_recommendations: {
+        data: {
+          recommendations: courseData.recommendations || [],
+          metadata: {
+            total_courses: courseData.metadata?.total_courses || 0,
+            query_context: {
+              intent: courseData.metadata?.query_context?.intent || '',
+              confidence: courseData.metadata?.query_context?.confidence || 0
+            }
+          }
+        }
+      }
+    }));
+    setShowResults(prev => ({
+      ...prev,
+      course_recommendations: true
+    }));
   };
 
   return {
