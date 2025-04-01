@@ -6,9 +6,12 @@ interface DialogueInputProps {
   isLoading: boolean;
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
-export const DialogueInput: React.FC<DialogueInputProps> = ({ onSubmit, isLoading, value, onChange }) => {
+export const DialogueInput: React.FC<DialogueInputProps> = ({ onSubmit, isLoading, value, onChange, placeholder, onFocus, onBlur }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(value);
@@ -28,9 +31,11 @@ export const DialogueInput: React.FC<DialogueInputProps> = ({ onSubmit, isLoadin
             <Text size="3" weight="bold" mb="2">输入您的问题</Text>
             <TextField.Root>
               <TextField.Input
-                placeholder="请输入您的问题..."
+                placeholder={placeholder || "请输入您的问题..."}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
+                onFocus={onFocus}
+                onBlur={onBlur}
                 disabled={isLoading}
                 style={{
                   width: '100%',
@@ -46,7 +51,7 @@ export const DialogueInput: React.FC<DialogueInputProps> = ({ onSubmit, isLoadin
               <TextField.Slot>
                 <Button 
                   type="submit" 
-                  disabled={isLoading || !value.trim()}
+                  disabled={isLoading}
                   style={{
                     padding: '8px 16px',
                     fontSize: '14px',

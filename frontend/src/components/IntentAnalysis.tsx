@@ -138,8 +138,18 @@ const ChatResponse: React.FC<{ result: any; isLoading?: boolean }> = ({ result, 
 };
 
 const IntentAnalysis: React.FC = () => {
-  const [input, setInput] = useState(`如何提高工作效率？`);
+  const [input, setInput] = useState('');
   const { isLoading, result, error, progressSteps, showResults, handleSubmit } = useIntentAnalysis();
+  const defaultPlaceholder = '如何进行AI培训？';
+
+  const handleSubmitWithDefault = (value: string) => {
+    if (!value.trim()) {
+      setInput(defaultPlaceholder);
+      handleSubmit(defaultPlaceholder);
+    } else {
+      handleSubmit(value);
+    }
+  };
 
   // Add refs for debugging
   const leftSectionRef = useRef<HTMLDivElement>(null);
@@ -240,10 +250,11 @@ const IntentAnalysis: React.FC = () => {
                 }}>
                   {/* Input Card - Fixed Height */}
                   <DialogueInput 
-                    onSubmit={handleSubmit} 
+                    onSubmit={handleSubmitWithDefault} 
                     isLoading={isLoading} 
                     value={input}
                     onChange={setInput}
+                    placeholder={defaultPlaceholder}
                   />
 
                   {/* Progress Steps Card */}
@@ -341,10 +352,11 @@ const IntentAnalysis: React.FC = () => {
                 overflow: 'hidden'
               }}>
                 <DialogueInput 
-                  onSubmit={handleSubmit} 
+                  onSubmit={handleSubmitWithDefault} 
                   isLoading={isLoading} 
                   value={input}
                   onChange={setInput}
+                  placeholder={defaultPlaceholder}
                 />
 
                 {error && (
