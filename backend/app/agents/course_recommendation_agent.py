@@ -23,20 +23,46 @@ class CourseRecommendationAgent:
         logger.info(f"初始化课程推荐代理，PDF目录: {self.pdf_dir}")
 
     def _extract_text_from_pdf(self, pdf_path: str) -> List[Dict]:
-        """从PDF文件中提取文本内容"""
+        """从PDF文件中提取文本内容，并识别不同的课程"""
         try:
             with open(pdf_path, 'rb') as file:
                 reader = PyPDF2.PdfReader(file)
-                pages = []
+                courses = []
+                current_course = {
+                    "title": "",
+                    "content": "",
+                    "pages": []
+                }
+                
                 for page_num in range(len(reader.pages)):
                     page = reader.pages[page_num]
                     text = page.extract_text()
                     if text.strip():
-                        pages.append({
-                            "content": text,
-                            "page": page_num + 1
-                        })
-                return pages
+                        # 尝试识别课程标题（假设标题在页面开头，且格式特殊）
+                        lines = text.split('\n')
+                        if lines:
+                            first_line = lines[0].strip()
+                            # 检查是否是新的课程标题（可以根据实际PDF格式调整判断条件）
+                            if first_line.startswith('《') and first_line.endswith('》'):
+                                # 如果已经有内容，保存当前课程
+                                if current_course["content"]:
+                                    courses.append(current_course)
+                                # 开始新课程
+                                current_course = {
+                                    "title": first_line.strip('《》'),
+                                    "content": text,
+                                    "pages": [page_num + 1]
+                                }
+                            else:
+                                # 继续当前课程
+                                current_course["content"] += "\n" + text
+                                current_course["pages"].append(page_num + 1)
+                
+                # 添加最后一个课程
+                if current_course["content"]:
+                    courses.append(current_course)
+                
+                return courses
         except Exception as e:
             logger.error(f"Error extracting text from {pdf_path}: {str(e)}")
             return []
@@ -64,27 +90,31 @@ class CourseRecommendationAgent:
                 loading_info.append(f"正在处理PDF文件: {pdf_file.name}")
                 
                 # 读取PDF内容
-                pages = self._extract_text_from_pdf(pdf_path)
+                courses = self._extract_text_from_pdf(pdf_path)
                 
-                if pages:
-                    logger.info(f"成功提取 {len(pages)} 页内容")
-                    loading_info.append(f"成功提取 {len(pages)} 页内容")
-                    self.course_contents[pdf_file.stem] = {
-                        "title": pdf_file.stem,
-                        "path": pdf_path,
-                        "pages": pages,
-                        "total_pages": len(pages)
-                    }
-                    logger.info(f"已加载课程: {pdf_file.stem}")
-                    loading_info.append(f"已加载课程: {pdf_file.stem}")
+                if courses:
+                    logger.info(f"成功提取 {len(courses)} 个课程")
+                    loading_info.append(f"成功提取 {len(courses)} 个课程")
                     
-                    # 创建课程摘要
-                    self.course_summaries.append({
-                        "title": pdf_file.stem,
-                        "path": pdf_path,
-                        "summary": f"这是{pdf_file.stem}课程的内容摘要",
-                        "total_pages": len(pages)
-                    })
+                    for course in courses:
+                        course_title = course["title"]
+                        self.course_contents[course_title] = {
+                            "title": course_title,
+                            "path": pdf_path,
+                            "content": course["content"],
+                            "pages": course["pages"],
+                            "total_pages": len(course["pages"])
+                        }
+                        logger.info(f"已加载课程: {course_title}")
+                        loading_info.append(f"已加载课程: {course_title}")
+                        
+                        # 创建课程摘要
+                        self.course_summaries.append({
+                            "title": course_title,
+                            "path": pdf_path,
+                            "summary": f"这是{course_title}课程的内容摘要",
+                            "total_pages": len(course["pages"])
+                        })
                 else:
                     logger.warning(f"无法从 {pdf_file.name} 提取内容")
                     loading_info.append(f"无法从 {pdf_file.name} 提取内容")
@@ -148,27 +178,27 @@ class CourseRecommendationAgent:
     async def _search_relevant_content(self, query: str, k: int = 5) -> AsyncGenerator[Dict, None]:
         """搜索相关内容"""
         yield {"type": "log", "message": f"开始搜索相关内容，查询: {query}"}
-        results = []
         
+        results = []
         for course_title, course_info in self.course_contents.items():
             yield {"type": "log", "message": f"正在搜索课程: {course_title}"}
-            for page in course_info["pages"]:
-                relevance = await self._calculate_relevance(query, page["content"])
-                # 降低阈值到 0.05
-                if relevance > 0.05:
-                    message = f"找到相关内容 - 课程: {course_title}, 相关度: {relevance:.2f}"
-                    yield {"type": "log", "message": message}
-                    results.append({
-                        "content": page["content"][:500] + "...",
-                        "source": course_info["title"],
-                        "title": course_info["title"],
-                        "page": page["page"],
-                        "relevance_score": relevance
-                    })
+            relevance = await self._calculate_relevance(query, course_info["content"])
+            # 降低阈值到 0.05
+            if relevance > 0.05:
+                message = f"找到相关内容 - 课程: {course_title}, 相关度: {relevance:.2f}"
+                yield {"type": "log", "message": message}
+                results.append({
+                    "content": course_info["content"][:500] + "...",
+                    "source": course_info["title"],
+                    "title": course_info["title"],
+                    "pages": course_info["pages"],
+                    "relevance_score": relevance
+                })
         
         # 按相关度排序
         results.sort(key=lambda x: x["relevance_score"], reverse=True)
-        yield {"type": "log", "message": f"搜索完成，找到 {len(results)} 个相关结果"}
+        
+        yield {"type": "log", "message": f"搜索完成，找到 {len(results)} 个相关课程"}
         yield {"type": "results", "data": results[:k]}
 
     async def recommend_courses_stream(self, context: UserContext, intent_analysis: IntentAnalysis):
@@ -211,7 +241,7 @@ class CourseRecommendationAgent:
                     "relevance_score": result["relevance_score"],
                     "summary": result["content"],
                     "source": result["source"],
-                    "page": result["page"]
+                    "pages": result["pages"]
                 })
                 logs.append(f"添加推荐: {result['title']} (相关度: {result['relevance_score']:.2f})")
 
