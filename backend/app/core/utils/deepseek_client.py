@@ -61,10 +61,10 @@ class DeepSeekClient(BaseLLMClient):
             presence_penalty=presence_penalty
         ).model_dump()
         
-        print(f"\n=== 准备请求数据 ===")
-        print(f"Stream enabled: {stream}")
-        print(f"Request data: {request_data}")
-        print("===================\n")
+        # print(f"\n=== 准备请求数据 ===")
+        # print(f"Stream enabled: {stream}")
+        # print(f"Request data: {request_data}")
+        # print("===================\n")
         
         return request_data
 
@@ -85,12 +85,12 @@ class DeepSeekClient(BaseLLMClient):
         )
         params = {"api-version": self.api_version}
 
-        print(f"\n=== DeepSeek Stream API 请求信息 ===")
-        print(f"API Key: {self.api_key}")
-        print(f"请求地址: {self._get_url()}")
-        print(f"请求参数: {request_data}")
-        print(f"Headers: {self.headers}")
-        print("========================\n")
+        # print(f"\n=== DeepSeek Stream API 请求信息 ===")
+        # print(f"API Key: {self.api_key}")
+        # print(f"请求地址: {self._get_url()}")
+        # print(f"请求参数: {request_data}")
+        # print(f"Headers: {self.headers}")
+        # print("========================\n")
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:

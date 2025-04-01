@@ -64,9 +64,6 @@ class TrainingAdvisorAgent:
 用户提问：{context.messages[-1]['content']}"""}
         ]
 
-        print(f"\n=== 提问分析请求 ===")
-        print(f"Messages: {json.dumps(messages, ensure_ascii=False, indent=2)}")
-
         try:
             response = await self.llm_service.create_chat_completion(
                 messages=messages,
@@ -75,8 +72,6 @@ class TrainingAdvisorAgent:
 
             if isinstance(response, dict) and "choices" in response:
                 content = response["choices"][0]["message"]["content"]
-                print(f"\n=== 解析内容 ===")
-                print(f"Content: {content}")
 
                 # 处理可能包含 Markdown 代码块的情况
                 content = content.strip()
@@ -88,23 +83,11 @@ class TrainingAdvisorAgent:
 
                 # 尝试解析 JSON 响应
                 result = json.loads(content)
-                print(f"\n=== 解析结果 ===")
-                print(f"Result: {json.dumps(result, ensure_ascii=False, indent=2)}")
 
                 return result
             else:
-                print(f"\n=== 错误：响应格式无效 ===")
-                print(f"Response type: {type(response)}")
-                print(f"Response content: {response}")
                 raise ValueError("Invalid response format")
         except Exception as e:
-            print(f"\n=== 解析错误 ===")
-            print(f"Error type: {type(e)}")
-            print(f"Error message: {str(e)}")
-            if isinstance(e, json.JSONDecodeError):
-                print(f"Error position: {e.pos}")
-                print(f"Error line: {e.lineno}")
-                print(f"Error column: {e.colno}")
             return {
                 "error": str(e),
                 "question_analysis": {
@@ -142,7 +125,6 @@ class TrainingAdvisorAgent:
         """
         start_time = time.time()
         current_time = time.strftime('%H:%M:%S')
-        print(f"\n=== 提问分析开始: {current_time} ===")
         yield f"=== 提问分析开始: {current_time} ==="
         await asyncio.sleep(1)
 
@@ -198,9 +180,6 @@ class TrainingAdvisorAgent:
 用户提问：{context.messages[-1]['content']}"""}
             ]
 
-            print(f"\n=== 提问分析请求消息 ===")
-            print(f"Messages: {json.dumps(messages, ensure_ascii=False, indent=2)}")
-
             # 发送处理步骤并等待
             processing_steps = [
                 "正在分析提问方式...",
@@ -231,13 +210,10 @@ class TrainingAdvisorAgent:
                         content = chunk["choices"][0].get("delta", {}).get("content", "")
                         if content:
                             current_json += content
-                            print(f"\n=== 收到内容片段 ===")
-                            print(f"Content: {content}")
 
                             # 检查是否开始接收JSON
                             if not json_started and '{' in content:
                                 json_started = True
-                                print("开始接收JSON数据")
 
                             # 计算大括号数量
                             for char in content:
@@ -258,9 +234,6 @@ class TrainingAdvisorAgent:
                                             if json_str.endswith("```"):
                                                 json_str = json_str[:-3]
                                             json_str = json_str.strip()
-
-                                            print(f"\n=== 尝试解析JSON ===")
-                                            print(f"JSON string: {json_str}")
 
                                             # 尝试解析 JSON
                                             result = json.loads(json_str)
@@ -286,9 +259,6 @@ class TrainingAdvisorAgent:
 
                                             last_valid_json = result
 
-                                            print(f"\n=== JSON解析成功 ===")
-                                            print(f"Result: {json.dumps(result, ensure_ascii=False, indent=2)}")
-
                                             # 发送部分结果并等待
                                             yield result
                                             await asyncio.sleep(1)
@@ -296,45 +266,30 @@ class TrainingAdvisorAgent:
                                             # 重置状态
                                             current_json = ""
                                             in_json = False
-                                        except json.JSONDecodeError as e:
-                                            print(f"\n=== JSON解析错误 ===")
-                                            print(f"Error: {str(e)}")
-                                            print(f"Position: {e.pos}")
-                                            print(f"Line: {e.lineno}")
-                                            print(f"Column: {e.colno}")
+                                        except json.JSONDecodeError:
+                                            # JSON 解析失败，继续累积
                                             pass
-                                        except Exception as e:
-                                            print(f"\n=== 其他错误 ===")
-                                            print(f"Error type: {type(e)}")
-                                            print(f"Error message: {str(e)}")
+                                        except Exception:
+                                            # 其他错误，继续累积
                                             pass
 
                 # 检查是否成功获取到有效结果
                 if not json_started:
-                    print("\n=== 错误：未收到任何JSON数据 ===")
                     raise ValueError("未收到任何JSON数据")
 
                 if not json_completed:
-                    print("\n=== 错误：JSON数据不完整 ===")
                     raise ValueError("JSON数据不完整")
 
                 # 返回最后一个有效的 JSON 结果
                 if last_valid_json:
                     end_time = time.time()
                     current_time = time.strftime('%H:%M:%S')
-                    print(f"\n=== 提问分析完成 ===")
-                    print(f"Time: {current_time}")
-                    print(f"Duration: {end_time - start_time:.1f}秒")
                     yield f"=== 提问分析完成: {current_time} (耗时: {end_time - start_time:.1f}秒) ==="
                     await asyncio.sleep(1)
                     yield last_valid_json
                 else:
-                    print("\n=== 错误：未能获取有效的分析结果 ===")
                     raise ValueError("未能获取有效的分析结果")
             except Exception as e:
-                print(f"\n=== 流式处理错误 ===")
-                print(f"Error type: {type(e)}")
-                print(f"Error message: {str(e)}")
                 yield "提问分析出错"
                 await asyncio.sleep(1)
                 yield {
@@ -368,9 +323,6 @@ class TrainingAdvisorAgent:
                     }
                 }
         except Exception as e:
-            print(f"\n=== 提问分析过程错误 ===")
-            print(f"Error type: {type(e)}")
-            print(f"Error message: {str(e)}")
             yield "提问分析过程出错"
             await asyncio.sleep(1)
             yield {

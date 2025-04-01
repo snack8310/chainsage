@@ -8,6 +8,10 @@ from app.core.config import get_settings
 from pydantic import BaseModel
 import json
 import asyncio
+import logging
+
+# 配置日志
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -41,6 +45,9 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
     流式处理分析过程
     """
     try:
+        logger.info(f"开始处理用户请求: {request.message}")
+        logger.info(f"用户ID: {request.user_id}, 会话ID: {request.session_id}")
+
         # 发送开始分析的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'started', 'message': '开始分析流程'})}\n\n"
         await asyncio.sleep(0.1)
@@ -67,7 +74,10 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
                 intent_analysis = chunk
 
         if not intent_analysis:
+            logger.error("意图分析失败")
             raise ValueError("意图分析失败")
+
+        logger.info(f"意图分析完成: {intent_analysis.intent} (置信度: {intent_analysis.confidence})")
 
         # 发送意图分析完成的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'intent_analysis_completed', 'message': '意图分析完成'})}\n\n"
@@ -86,7 +96,10 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
                 chat_response = chunk
 
         if not chat_response:
+            logger.error("标准回答生成失败")
             raise ValueError("标准回答生成失败")
+
+        logger.info("标准回答生成完成")
 
         # 发送标准回答完成的消息
         yield f"data: {json.dumps({'type': 'status', 'status': 'chat_response_completed', 'message': '标准回答已生成'})}\n\n"
@@ -97,7 +110,7 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
         
         # 只有在工作方法相关的咨询时才进行提问分析
         if is_work_method:
-            # 发送提问分析开始的消息
+            logger.info("开始提问分析")
             yield f"data: {json.dumps({'type': 'status', 'status': 'question_analysis_started', 'message': '分析提问方式'})}\n\n"
             await asyncio.sleep(0.1)
 
@@ -110,17 +123,19 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
                     question_analysis = chunk
 
             if not question_analysis:
+                logger.error("提问分析失败")
                 raise ValueError("提问分析失败")
 
-            # 发送提问分析完成的消息
+            logger.info("提问分析完成")
             yield f"data: {json.dumps({'type': 'status', 'status': 'question_analysis_completed', 'message': '提问分析完成'})}\n\n"
             await asyncio.sleep(0.1)
         else:
-            # 如果不是工作方法相关的咨询，发送跳过消息
+            logger.info("非工作方法咨询，跳过提问分析")
             yield f"data: {json.dumps({'type': 'status', 'status': 'question_analysis_skipped', 'message': '非工作方法咨询，跳过提问分析'})}\n\n"
             await asyncio.sleep(0.1)
 
         # 开始课程推荐分析
+        logger.info("开始课程推荐分析")
         yield f"data: {json.dumps({'type': 'status', 'status': 'course_recommendation_started', 'message': '开始课程推荐分析'})}\n\n"
         await asyncio.sleep(0.1)
 
@@ -133,18 +148,21 @@ async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_
                 course_recommendations = chunk
 
         if not course_recommendations:
+            logger.error("课程推荐失败")
             raise ValueError("课程推荐失败")
 
-        # 发送课程推荐完成的消息
+        logger.info("课程推荐完成")
         yield f"data: {json.dumps({'type': 'status', 'status': 'course_recommendation_completed', 'message': '课程推荐完成'})}\n\n"
         await asyncio.sleep(0.1)
 
         # 发送最终完成消息
+        logger.info("分析流程完成")
         yield f"data: {json.dumps({'type': 'status', 'status': 'completed', 'message': '分析完成'})}\n\n"
         await asyncio.sleep(0.1)
         yield "event: complete\n\n"
 
     except Exception as e:
+        logger.error(f"分析过程中出错: {str(e)}", exc_info=True)
         yield f"data: {json.dumps({'type': 'error', 'message': f'分析过程中出错: {str(e)}'})}\n\n"
         await asyncio.sleep(0.1)
         yield "event: complete\n\n"
@@ -170,6 +188,7 @@ async def analyze_intent(
         intent_request = IntentRequest(**body)
     else:
         if not message or not user_id or not session_id:
+            logger.error("缺少必要参数")
             return JSONResponse(
                 status_code=400,
                 content={"error": "Missing required parameters"}

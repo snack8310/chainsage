@@ -27,7 +27,6 @@ class ChatAgent:
             try:
                 return response["choices"][0]["message"]["content"]
             except (KeyError, IndexError) as e:
-                print("Unexpected API response format:", response)
                 return f"抱歉，处理AI响应时出现错误: {str(e)}\n响应格式: {response}"
         else:
             return "抱歉，收到了意外的响应类型"
@@ -59,10 +58,7 @@ class ChatAgent:
                             content = chunk["choices"][0].get("delta", {}).get("content")
                             if content:
                                 yield content
-                except Exception as e:
-                    print(f"Error processing chunk: {e}")
-                    print(f"Problematic chunk: {chunk}")
+                except Exception:
                     continue
-        except Exception as e:
-            print(f"Stream error: {e}")
+        except Exception:
             yield "[ERROR] Stream ended unexpectedly" 

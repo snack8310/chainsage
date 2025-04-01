@@ -45,12 +45,9 @@ class BaseAgent:
                     content = chunk["choices"][0].get("delta", {}).get("content", "")
                     if content:
                         current_json += content
-                        print(f"\n=== 收到内容片段 ===")
-                        print(f"Content: {content}")
 
                         if not json_started and '{' in content:
                             json_started = True
-                            print("开始接收JSON数据")
 
                         if json_started and not json_completed:
                             try:
@@ -62,9 +59,6 @@ class BaseAgent:
                                 continue
 
         except Exception as e:
-            print(f"\n=== 流式处理错误 ===")
-            print(f"Error type: {type(e)}")
-            print(f"Error message: {str(e)}")
             yield {"error": str(e)}
 
     async def _handle_completion_response(
@@ -81,21 +75,8 @@ class BaseAgent:
 
             if isinstance(response, dict) and "choices" in response:
                 content = response["choices"][0]["message"]["content"]
-                print(f"\n=== 解析内容 ===")
-                print(f"Content: {content}")
-
                 return await self._process_json_response(content)
             else:
-                print(f"\n=== 错误：响应格式无效 ===")
-                print(f"Response type: {type(response)}")
-                print(f"Response content: {response}")
                 raise ValueError("Invalid response format")
         except Exception as e:
-            print(f"\n=== 解析错误 ===")
-            print(f"Error type: {type(e)}")
-            print(f"Error message: {str(e)}")
-            if isinstance(e, json.JSONDecodeError):
-                print(f"Error position: {e.pos}")
-                print(f"Error line: {e.lineno}")
-                print(f"Error column: {e.colno}")
             return {"error": str(e)} 

@@ -121,7 +121,19 @@ class CourseRecommendationAgent:
         # 计算相关度分数 (0-1)
         if not query_words:
             return 0.0
-        return min(1.0, overlap / len(query_words))
+            
+        # 降低阈值，使更多相关内容被推荐
+        base_score = min(1.0, overlap / len(query_words))
+        
+        # 如果查询词完全匹配，给予更高的分数
+        if query in text:
+            return 1.0
+            
+        # 如果查询词是文本的子串，给予较高的分数
+        if any(word in text for word in query_words):
+            return max(base_score, 0.5)
+            
+        return base_score
 
     async def _search_relevant_content(self, query: str, k: int = 5) -> AsyncGenerator[Dict, None]:
         """搜索相关内容"""
@@ -132,8 +144,9 @@ class CourseRecommendationAgent:
             yield {"type": "log", "message": f"正在搜索课程: {course_title}"}
             for page in course_info["pages"]:
                 relevance = self._calculate_relevance(query, page["content"])
-                if relevance > 0.1:
-                    message = f"找到相关内容 - 课程: {course_title}, 页码: {page['page']}, 相关度: {relevance:.2f}"
+                # 降低阈值到 0.05
+                if relevance > 0.05:
+                    message = f"找到相关内容 - 课程: {course_title}, 相关度: {relevance:.2f}"
                     yield {"type": "log", "message": message}
                     results.append({
                         "content": page["content"][:500] + "...",
