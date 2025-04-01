@@ -24,9 +24,8 @@ def setup_test_data():
     test_data_dir = project_root / "app" / "data" / "courses"
     test_data_dir.mkdir(parents=True, exist_ok=True)
     yield test_data_dir
-    # 清理测试数据
-    for file in test_data_dir.glob("*.pdf"):
-        file.unlink()
+    # 不再清理测试数据，保留PDF文件
+    pass
 
 @pytest.fixture
 def mock_pdf_content():

@@ -105,35 +105,45 @@ class CourseRecommendationAgent:
 
         return "\n".join(loading_info)
 
-    def _calculate_relevance(self, query: str, text: str) -> float:
-        """计算文本与查询的相关度分数"""
-        # 将查询和文本转换为小写
-        query = query.lower()
-        text = text.lower()
-        
-        # 计算关键词匹配
-        query_words = set(query.split())
-        text_words = set(text.split())
-        
-        # 计算重叠词数
-        overlap = len(query_words.intersection(text_words))
-        
-        # 计算相关度分数 (0-1)
-        if not query_words:
+    async def _calculate_relevance(self, query: str, text: str) -> float:
+        """使用LLM计算文本与查询的相关度分数"""
+        messages = [
+            {"role": "system", "content": """你是一个专业的文本相关性评估助手。请评估查询文本与目标文本的相关性，并返回一个0-1之间的分数。
+分数说明：
+- 1.0: 完全相关
+- 0.8-0.9: 高度相关
+- 0.6-0.7: 中度相关
+- 0.4-0.5: 低度相关
+- 0.0-0.3: 几乎不相关
+
+请只返回分数，不要包含任何其他文字。"""},
+            {"role": "user", "content": f"""查询文本：{query}
+目标文本：{text}
+
+请评估这两个文本的相关性，并返回一个0-1之间的分数。"""}
+        ]
+
+        try:
+            response = await self.llm_service.create_chat_completion(
+                messages=messages,
+                temperature=0.1  # 使用较低的温度以获得更稳定的结果
+            )
+            
+            if "error" in response:
+                logger.error(f"LLM计算相关度时出错: {response['error']}")
+                return 0.0
+                
+            content = response["choices"][0]["message"]["content"].strip()
+            try:
+                score = float(content)
+                return max(0.0, min(1.0, score))  # 确保分数在0-1之间
+            except ValueError:
+                logger.error(f"无法将LLM响应转换为分数: {content}")
+                return 0.0
+                
+        except Exception as e:
+            logger.error(f"LLM计算相关度时发生异常: {str(e)}")
             return 0.0
-            
-        # 降低阈值，使更多相关内容被推荐
-        base_score = min(1.0, overlap / len(query_words))
-        
-        # 如果查询词完全匹配，给予更高的分数
-        if query in text:
-            return 1.0
-            
-        # 如果查询词是文本的子串，给予较高的分数
-        if any(word in text for word in query_words):
-            return max(base_score, 0.5)
-            
-        return base_score
 
     async def _search_relevant_content(self, query: str, k: int = 5) -> AsyncGenerator[Dict, None]:
         """搜索相关内容"""
@@ -143,7 +153,7 @@ class CourseRecommendationAgent:
         for course_title, course_info in self.course_contents.items():
             yield {"type": "log", "message": f"正在搜索课程: {course_title}"}
             for page in course_info["pages"]:
-                relevance = self._calculate_relevance(query, page["content"])
+                relevance = await self._calculate_relevance(query, page["content"])
                 # 降低阈值到 0.05
                 if relevance > 0.05:
                     message = f"找到相关内容 - 课程: {course_title}, 相关度: {relevance:.2f}"
