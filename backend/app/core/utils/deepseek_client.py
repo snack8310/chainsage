@@ -144,12 +144,12 @@ class DeepSeekClient(BaseLLMClient):
         )
         params = {"api-version": self.api_version}
 
-        print(f"\n=== DeepSeek API 请求信息 ===")
-        print(f"API Key: {self.api_key}")
-        print(f"请求地址: {self._get_url()}")
-        print(f"API Version: {self.api_version}")
-        print(f"Model: {self.model}")
-        print("========================\n")
+        # print(f"\n=== DeepSeek API 请求信息 ===")
+        # print(f"API Key: {self.api_key}")
+        # print(f"请求地址: {self._get_url()}")
+        # print(f"API Version: {self.api_version}")
+        # print(f"Model: {self.model}")
+        # print("========================\n")
         
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:

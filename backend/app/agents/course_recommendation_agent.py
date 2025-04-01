@@ -16,27 +16,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class CourseRecommendationAgent:
-    def __init__(self):
-        self.llm_service = LLMService()
-        self.pdf_dir = os.path.join(os.path.dirname(__file__), "../data/courses")
-        self.course_contents = {}  # 存储课程内容
-        logger.info(f"初始化课程推荐代理，PDF目录: {self.pdf_dir}")
+    _instance = None
+    _is_initialized = False
 
-    def _clean_text(self, text: str) -> str:
-        """清理文本内容，移除特殊字符和格式问题"""
-        # 替换特殊字符
-        text = text.replace('', '•')
-        text = text.replace('----', '')
-        text = text.replace('——', '')
-        
-        # 移除多余的空格和换行
-        text = re.sub(r'\s+', ' ', text)
-        
-        # 修复常见的格式问题
-        text = re.sub(r'([。！？；])\s*([^。！？；])', r'\1\n\2', text)  # 在句号后添加换行
-        text = re.sub(r'([：:])\s*([^•\n])', r'\1\n\2', text)  # 在冒号后添加换行
-        
-        return text.strip()
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(CourseRecommendationAgent, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        if not self._is_initialized:
+            self.llm_service = LLMService()
+            self.pdf_dir = os.path.join(os.path.dirname(__file__), "../data/courses")
+            self.course_contents = {}  # 存储课程内容
+            self.course_summaries = []  # 存储课程摘要
+            logger.info(f"初始化课程推荐代理，PDF目录: {self.pdf_dir}")
+            self._is_initialized = True
 
     def _structure_content(self, content: str) -> Dict:
         """将内容结构化处理"""
@@ -145,7 +140,8 @@ class CourseRecommendationAgent:
    - 提取讲师的一句话简介（如果有）
    - 提取讲师的专业领域和成就
    - 提取讲师的教学经验和研究方向
-7. 确保所有提取的内容都经过适当的格式化和清理"""},
+7. 确保所有提取的内容都经过适当的格式化和清理
+8. 直接返回JSON数据，不要包含任何markdown标记"""},
             {"role": "user", "content": content}
         ]
 
@@ -161,6 +157,10 @@ class CourseRecommendationAgent:
                 
             content = response["choices"][0]["message"]["content"].strip()
             try:
+                # 移除可能的markdown代码块标记
+                content = re.sub(r'^```(?:json)?\s*', '', content)
+                content = re.sub(r'\s*```$', '', content)
+                
                 # 尝试解析JSON响应
                 structured_data = json.loads(content)
                 # 添加原始内容
@@ -224,108 +224,84 @@ class CourseRecommendationAgent:
                     "pages": []
                 }
                 
+                # 收集所有页面的文本
+                all_text = ""
                 for page_num in range(len(reader.pages)):
                     page = reader.pages[page_num]
                     text = page.extract_text()
                     if text.strip():
-                        # 清理文本
-                        text = self._clean_text(text)
-                        
-                        # 使用LLM分析当前页面内容
-                        messages = [
-                            {"role": "system", "content": """你是一个专业的课程内容分析助手。请分析给定的文本内容，判断是否包含新的课程信息。
-如果是新课程的开始，请返回JSON格式：
+                        all_text += text + "\n"
+                
+                # 使用LLM一次性分析整个文档
+                messages = [
+                    {"role": "system", "content": """你是一个专业的课程内容分析助手。请分析给定的文本内容，识别其中的课程信息。
+请返回JSON格式：
 {
-    "is_new_course": true,
-    "title": "课程标题",
-    "content": "课程内容"
-}
-如果不是新课程，请返回：
-{
-    "is_new_course": false,
-    "content": "课程内容"
+    "courses": [
+        {
+            "title": "课程标题",
+            "content": "课程内容",
+            "pages": [页码列表]
+        }
+    ]
 }
 
 请确保：
 1. 准确识别课程标题（通常以《》或特殊格式标记）
 2. 保持内容的完整性和连贯性
 3. 去除任何特殊字符和格式问题
-4. 如果无法确定，倾向于将其视为当前课程的继续"""},
-                            {"role": "user", "content": text}
-                        ]
+4. 正确记录每个课程对应的页码"""},
+                    {"role": "user", "content": all_text}
+                ]
 
+                try:
+                    response = await self.llm_service.create_chat_completion(
+                        messages=messages,
+                        temperature=0.1
+                    )
+                    
+                    if "error" not in response:
+                        content = response["choices"][0]["message"]["content"].strip()
                         try:
-                            response = await self.llm_service.create_chat_completion(
-                                messages=messages,
-                                temperature=0.1
-                            )
+                            analysis = json.loads(content)
+                            courses = analysis.get("courses", [])
                             
-                            if "error" not in response:
-                                content = response["choices"][0]["message"]["content"].strip()
-                                try:
-                                    analysis = json.loads(content)
-                                    
-                                    if analysis["is_new_course"]:
-                                        # 如果已经有内容，保存当前课程
-                                        if current_course["content"]:
-                                            # 使用LLM进行内容分析和优化
-                                            structured_content = await self._analyze_content_with_llm(current_course["content"])
-                                            enhanced_content = await self._enhance_content_with_llm(structured_content)
-                                            current_course.update(enhanced_content)
-                                            courses.append(current_course)
-                                        
-                                        # 开始新课程
-                                        current_course = {
-                                            "title": analysis["title"],
-                                            "content": analysis["content"],
-                                            "pages": [page_num + 1]
-                                        }
-                                    else:
-                                        # 继续当前课程
-                                        current_course["content"] += "\n" + analysis["content"]
-                                        current_course["pages"].append(page_num + 1)
-                                except json.JSONDecodeError:
-                                    logger.error(f"无法解析LLM响应为JSON: {content}")
-                                    # 如果解析失败，使用基础方法处理
-                                    if text.startswith('《') and text.endswith('》'):
-                                        if current_course["content"]:
-                                            structured_content = await self._analyze_content_with_llm(current_course["content"])
-                                            enhanced_content = await self._enhance_content_with_llm(structured_content)
-                                            current_course.update(enhanced_content)
-                                            courses.append(current_course)
-                                        current_course = {
-                                            "title": text.strip('《》'),
-                                            "content": text,
-                                            "pages": [page_num + 1]
-                                        }
-                                    else:
-                                        current_course["content"] += "\n" + text
-                                        current_course["pages"].append(page_num + 1)
-                        except Exception as e:
-                            logger.error(f"LLM分析页面内容时出错: {str(e)}")
-                            # 如果LLM分析失败，使用基础方法处理
-                            if text.startswith('《') and text.endswith('》'):
-                                if current_course["content"]:
-                                    structured_content = await self._analyze_content_with_llm(current_course["content"])
-                                    enhanced_content = await self._enhance_content_with_llm(structured_content)
-                                    current_course.update(enhanced_content)
-                                    courses.append(current_course)
-                                current_course = {
-                                    "title": text.strip('《》'),
-                                    "content": text,
-                                    "pages": [page_num + 1]
-                                }
+                            # 对每个课程进行结构化分析
+                            for course in courses:
+                                structured_content = await self._analyze_content_with_llm(course["content"])
+                                enhanced_content = await self._enhance_content_with_llm(structured_content)
+                                course.update(enhanced_content)
+                                
+                        except json.JSONDecodeError:
+                            logger.error(f"无法解析LLM响应为JSON: {content}")
+                            # 如果解析失败，使用基础方法处理
+                            if all_text.startswith('《') and all_text.endswith('》'):
+                                courses = [{
+                                    "title": all_text.strip('《》'),
+                                    "content": all_text,
+                                    "pages": list(range(1, len(reader.pages) + 1))
+                                }]
                             else:
-                                current_course["content"] += "\n" + text
-                                current_course["pages"].append(page_num + 1)
-                
-                # 添加最后一个课程
-                if current_course["content"]:
-                    # 使用LLM进行内容分析和优化
-                    structured_content = await self._analyze_content_with_llm(current_course["content"])
-                    enhanced_content = await self._enhance_content_with_llm(structured_content)
-                    current_course.update(enhanced_content)
-                    courses.append(current_course)
+                                courses = [{
+                                    "title": "未命名课程",
+                                    "content": all_text,
+                                    "pages": list(range(1, len(reader.pages) + 1))
+                                }]
+                except Exception as e:
+                    logger.error(f"LLM分析文档内容时出错: {str(e)}")
+                    # 如果LLM分析失败，使用基础方法处理
+                    if all_text.startswith('《') and all_text.endswith('》'):
+                        courses = [{
+                            "title": all_text.strip('《》'),
+                            "content": all_text,
+                            "pages": list(range(1, len(reader.pages) + 1))
+                        }]
+                    else:
+                        courses = [{
+                            "title": "未命名课程",
+                            "content": all_text,
+                            "pages": list(range(1, len(reader.pages) + 1))
+                        }]
                 
                 return courses
         except Exception as e:
@@ -441,120 +417,52 @@ class CourseRecommendationAgent:
             logger.error(f"LLM计算相关度时发生异常: {str(e)}")
             return 0.0
 
-    async def _search_relevant_content(self, query: str, k: int = 5) -> AsyncGenerator[Dict, None]:
-        """搜索相关内容"""
-        yield {"type": "log", "message": f"开始搜索相关内容，查询: {query}"}
-        
-        results = []
-        for course_title, course_info in self.course_contents.items():
-            yield {"type": "log", "message": f"正在搜索课程: {course_title}"}
-            relevance = await self._calculate_relevance(query, course_info["content"])
-            # 降低阈值到 0.05
-            if relevance > 0.05:
-                message = f"找到相关内容 - 课程: {course_title}, 相关度: {relevance:.2f}"
-                yield {"type": "log", "message": message}
-                # 获取结构化数据
-                structured_data = course_info.get("structured_data", {})
-                results.append({
-                    "title": course_info["title"],
-                    "relevance_score": relevance,
-                    "content": course_info["content"][:500] + "...",
-                    "source": course_info["title"],
-                    "pages": course_info["pages"],
-                    "structured_data": {
-                        "description": structured_data.get("description", ""),
-                        "background": structured_data.get("background", ""),
-                        "objectives": structured_data.get("objectives", []),
-                        "outline": structured_data.get("outline", []),
-                        "requirements": structured_data.get("requirements", []),
-                        "target_audience": structured_data.get("target_audience", ""),
-                        "duration": structured_data.get("duration", ""),
-                        "level": structured_data.get("level", ""),
-                        "key_points": structured_data.get("key_points", []),
-                        "practical_examples": structured_data.get("practical_examples", []),
-                        "expected_outcomes": structured_data.get("expected_outcomes", []),
-                        "prerequisites": structured_data.get("prerequisites", []),
-                        "teaching_methods": structured_data.get("teaching_methods", []),
-                        "assessment_methods": structured_data.get("assessment_methods", []),
-                        "resources": structured_data.get("resources", []),
-                        "instructor_info": structured_data.get("instructor_info", {})
-                    }
-                })
-        
-        # 按相关度排序
-        results.sort(key=lambda x: x["relevance_score"], reverse=True)
-        
-        yield {"type": "log", "message": f"搜索完成，找到 {len(results)} 个相关课程"}
-        yield {"type": "results", "data": results[:k]}
-
     async def recommend_courses_stream(self, context: UserContext, intent_analysis: IntentAnalysis):
         """基于用户意图和问题分析推荐相关课程"""
         start_time = time.time()
         current_time = time.strftime('%H:%M:%S')
         logs = [f"\n=== 课程推荐开始: {current_time} ==="]
+        response_sent = False  # 添加标志来跟踪是否已发送响应
 
         try:
-            # 重新加载课程内容
-            logs.append("开始加载课程内容...")
-            loading_info = await self._load_course_contents()
-            logs.extend(loading_info.split('\n'))
-
             # 首先进行相似度搜索
             query = context.messages[0]['content']
-            logs.append("开始相似度搜索...")
+            logs.append("开始搜索相关课程...")
             
+            # 如果课程内容未加载，先加载
+            if not hasattr(self, 'course_contents') or not self.course_contents:
+                logs.append("加载课程内容...")
+                await self._load_course_contents()
+            
+            # 一次性计算所有课程的相关度
             search_results = []
-            async for result in self._search_relevant_content(query):
-                if result["type"] == "log":
-                    # 只保留重要的搜索日志，隐藏详细内容
-                    if "找到相关内容" in result["message"]:
-                        # 简化消息，只显示课程名和相关度
-                        message = result["message"]
-                        if "相关度:" in message:
-                            course_name = message.split("课程:")[1].split(",")[0].strip()
-                            relevance = message.split("相关度:")[1].strip()
-                            logs.append(f"找到相关内容 - 课程: {course_name}, 相关度: {relevance}")
-                    elif "搜索完成" in result["message"]:
-                        logs.append(result["message"])
-                elif result["type"] == "results":
-                    search_results = result["data"]
-
-            # 构建推荐结果
-            recommendations = []
-            for result in search_results:
-                # 构建课程推荐信息
-                recommendation = {
-                    "title": result["title"],
-                    "relevance_score": result["relevance_score"],
-                    "summary": result["structured_data"]["description"],
-                    "source": result["source"],
-                    "pages": result["pages"],
-                    "course_info": {
-                        "background": result["structured_data"]["background"],
-                        "objectives": result["structured_data"]["objectives"],
-                        "outline": result["structured_data"]["outline"],
-                        "requirements": result["structured_data"]["requirements"],
-                        "target_audience": result["structured_data"]["target_audience"],
-                        "duration": result["structured_data"]["duration"],
-                        "level": result["structured_data"]["level"],
-                        "key_points": result["structured_data"]["key_points"],
-                        "practical_examples": result["structured_data"]["practical_examples"],
-                        "expected_outcomes": result["structured_data"]["expected_outcomes"],
-                        "prerequisites": result["structured_data"]["prerequisites"],
-                        "teaching_methods": result["structured_data"]["teaching_methods"],
-                        "assessment_methods": result["structured_data"]["assessment_methods"],
-                        "resources": result["structured_data"]["resources"],
-                        "instructor_info": result["structured_data"]["instructor_info"]
-                    }
-                }
-                recommendations.append(recommendation)
-                logs.append(f"添加推荐: {result['title']} (相关度: {result['relevance_score']:.2f})")
+            for course_title, course_info in self.course_contents.items():
+                logs.append(f"正在分析课程: {course_title}")
+                relevance = await self._calculate_relevance(query, course_info["content"])
+                
+                if relevance > 0.05:
+                    message = f"找到相关内容 - 课程: {course_title}, 相关度: {relevance:.2f}"
+                    logs.append(message)
+                    # 获取结构化数据
+                    structured_data = course_info.get("structured_data", {})
+                    search_results.append({
+                        "title": course_info["title"],
+                        "relevance_score": relevance,
+                        "content": course_info["content"][:500] + "...",
+                        "source": course_info["title"],
+                        "pages": course_info["pages"],
+                        "structured_data": structured_data
+                    })
+            
+            # 按相关度排序
+            search_results.sort(key=lambda x: x["relevance_score"], reverse=True)
+            logs.append(f"搜索完成，找到 {len(search_results)} 个相关课程")
 
             # 构建最终响应
             response = {
-                "recommendations": recommendations,
+                "recommendations": search_results,
                 "metadata": {
-                    "total_courses": len(recommendations),
+                    "total_courses": len(search_results),
                     "query_context": {
                         "intent": intent_analysis.intent,
                         "confidence": intent_analysis.confidence
@@ -571,14 +479,26 @@ class CourseRecommendationAgent:
             try:
                 response_json = json.dumps(response, ensure_ascii=False, indent=2)
                 logs.append("推荐结果已生成")
+                
+                # 只有在未发送过响应的情况下才发送
+                if not response_sent:
+                    yield {"type": "course_recommendation", "data": response}
+                    response_sent = True
+                    
             except Exception as e:
                 error_msg = f"JSON序列化错误: {str(e)}"
                 logger.error(error_msg)
                 logger.error(f"问题数据: {response}")
                 logs.append(error_msg)
-                raise ValueError(error_msg)
-            
-            yield {"type": "course_recommendation", "data": response}
+                # 不抛出异常，而是直接构建错误响应
+                error_response = {
+                    "error": error_msg,
+                    "recommendations": [],
+                    "logs": logs
+                }
+                if not response_sent:
+                    yield {"type": "course_recommendation", "data": error_response}
+                    response_sent = True
 
         except Exception as e:
             error_message = f"课程推荐过程中出错: {str(e)}"
@@ -586,17 +506,19 @@ class CourseRecommendationAgent:
             logger.error(f"上下文信息: {context.messages[0]['content']}")
             logs.append(f"\n=== 课程推荐错误 ===\n{error_message}")
             
-            error_response = {
-                "error": error_message,
-                "recommendations": [],
-                "logs": logs
-            }
-            try:
-                error_json = json.dumps(error_response, ensure_ascii=False, indent=2)
-                logs.append("错误详情已记录")
-            except Exception as json_error:
-                logger.error(f"错误响应JSON序列化错误: {str(json_error)}")
-                logger.error(f"问题数据: {error_response}")
-                logs.append("错误详情记录失败")
-            
-            yield {"type": "course_recommendation", "data": error_response} 
+            # 只有在未发送过响应的情况下才发送错误响应
+            if not response_sent:
+                error_response = {
+                    "error": error_message,
+                    "recommendations": [],
+                    "logs": logs
+                }
+                try:
+                    error_json = json.dumps(error_response, ensure_ascii=False, indent=2)
+                    logs.append("错误详情已记录")
+                    yield {"type": "course_recommendation", "data": error_response}
+                    response_sent = True
+                except Exception as json_error:
+                    logger.error(f"错误响应JSON序列化错误: {str(json_error)}")
+                    logger.error(f"问题数据: {error_response}")
+                    logs.append("错误详情记录失败") 

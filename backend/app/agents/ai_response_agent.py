@@ -49,8 +49,8 @@ class AIResponseAgent(BaseAgent):
 用户问题：{context.messages[-1]['content']}"""}
         ]
 
-        print(f"\n=== AI回答生成请求 ===")
-        print(f"Messages: {json.dumps(messages, ensure_ascii=False, indent=2)}")
+        # print(f"\n=== AI回答生成请求 ===")
+        # print(f"Messages: {json.dumps(messages, ensure_ascii=False, indent=2)}")
 
         result = await self._handle_completion_response(messages, temperature=0.7)
         
