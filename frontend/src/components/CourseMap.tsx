@@ -147,6 +147,11 @@ const CourseMap: React.FC = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
 
+  const handleCourseClick = (courseId: number) => {
+    console.log('Navigating to course:', courseId);
+    navigate(`/course/${courseId}`, { replace: true });
+  };
+
   // 定义路径点和控制点，创建更优雅的S形
   const pathPoints = [
     { x: 100, y: 800 },    // 起点
@@ -423,7 +428,7 @@ const CourseMap: React.FC = () => {
             <CourseNode 
               course={course} 
               isActive={index === completedCount}
-              onClick={() => navigate(`/course/${course.id}`)}
+              onClick={() => handleCourseClick(course.id)}
             />
           </Box>
         ))}

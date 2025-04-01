@@ -5,7 +5,6 @@ import IntentAnalysis from './components/IntentAnalysis';
 import Chat from './components/Chat';
 import CourseMap from './components/CourseMap';
 import CourseDetail from './components/CourseDetail';
-import CourseList from './components/CourseList';
 
 const MainContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -126,10 +125,7 @@ const MainContent: React.FC = () => {
             bottom: 0,
             visibility: activeTab === 'course-detail' ? 'visible' : 'hidden'
           }}>
-            <Routes>
-              <Route path="/course" element={<CourseList />} />
-              <Route path="/course/:id" element={<CourseDetail />} />
-            </Routes>
+            <CourseDetail />
           </Tabs.Content>
         </Box>
       </Tabs.Root>
