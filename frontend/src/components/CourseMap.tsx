@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Text, Card, Flex, Dialog, Button } from '@radix-ui/themes';
+import { Box, Text, Card, Flex } from '@radix-ui/themes';
+import { useNavigate } from 'react-router-dom';
 
 interface Course {
   id: number;
@@ -142,56 +143,8 @@ const CourseNode: React.FC<{
   );
 };
 
-const CourseDetails: React.FC<{
-  course: Course;
-  onClose: () => void;
-}> = ({ course, onClose }) => {
-  return (
-    <Dialog.Root>
-      <Dialog.Content style={{ maxWidth: 450 }}>
-        <Dialog.Title>{course.title}</Dialog.Title>
-        <Dialog.Description size="2" mb="4">
-          {course.description}
-        </Dialog.Description>
-
-        <Flex direction="column" gap="3">
-          <Box>
-            <Text as="div" size="2" weight="bold" mb="1">课程信息</Text>
-            <Text as="div" size="2">难度：{course.level === 'beginner' ? '入门' : course.level === 'intermediate' ? '进阶' : '高级'}</Text>
-            <Text as="div" size="2">时长：{course.duration}</Text>
-          </Box>
-
-          {course.prerequisites && course.prerequisites.length > 0 && (
-            <Box>
-              <Text as="div" size="2" weight="bold" mb="1">前置课程</Text>
-              <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                {course.prerequisites.map((prereq, index) => (
-                  <li key={index}>
-                    <Text size="2">{prereq}</Text>
-                  </li>
-                ))}
-              </ul>
-            </Box>
-          )}
-
-          <Flex gap="3" mt="4">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                关闭
-              </Button>
-            </Dialog.Close>
-            <Button>
-              开始学习
-            </Button>
-          </Flex>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};
-
 const CourseMap: React.FC = () => {
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
 
   // 定义路径点和控制点，创建更优雅的S形
@@ -470,19 +423,11 @@ const CourseMap: React.FC = () => {
             <CourseNode 
               course={course} 
               isActive={index === completedCount}
-              onClick={() => setSelectedCourse(course)}
+              onClick={() => navigate(`/course/${course.id}`)}
             />
           </Box>
         ))}
       </Box>
-
-      {/* 课程详情弹窗 */}
-      {selectedCourse && (
-        <CourseDetails 
-          course={selectedCourse} 
-          onClose={() => setSelectedCourse(null)}
-        />
-      )}
     </Box>
   );
 };
