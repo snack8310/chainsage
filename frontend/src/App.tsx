@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
-import { Box, Tabs } from '@radix-ui/themes';
+import { Box, Tabs, Button } from '@radix-ui/themes';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import IntentAnalysis from './components/IntentAnalysis';
 import Chat from './components/Chat';
 import CourseMap from './components/CourseMap';
 import CourseDetail from './components/CourseDetail';
+import Login from './components/Login';
+
+// 创建一个简单的认证上下文
+interface AuthContextType {
+  isAuthenticated: boolean;
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+export const AuthContext = React.createContext<AuthContextType>({
+  isAuthenticated: false,
+  login: async () => {},
+  logout: () => {},
+});
 
 const MainContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('chat');
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, logout } = React.useContext(AuthContext);
 
   // 根据当前路径设置活动标签
   React.useEffect(() => {
@@ -21,6 +36,33 @@ const MainContent: React.FC = () => {
       setActiveTab('course-detail');
     }
   }, [location.pathname]);
+
+  if (!isAuthenticated) {
+    return <Login onLogin={async (username, password) => {
+      try {
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+
+        const response = await fetch('http://localhost:8000/api/v1/token', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+
+        const data = await response.json();
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('isAuthenticated', 'true');
+        window.location.reload();
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+    }} />;
+  }
 
   return (
     <Box style={{ 
@@ -56,11 +98,21 @@ const MainContent: React.FC = () => {
           position: 'relative'
         }}
       >
-        <Tabs.List style={{ flexShrink: 0 }}>
+        <Tabs.List style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Tabs.Trigger value="chat">Chat</Tabs.Trigger>
           <Tabs.Trigger value="intent">Intent Analysis</Tabs.Trigger>
           <Tabs.Trigger value="courses">课程地图</Tabs.Trigger>
           <Tabs.Trigger value="course-detail">课程详情</Tabs.Trigger>
+          <Button 
+            color="red" 
+            variant="soft" 
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+          >
+            Logout
+          </Button>
         </Tabs.List>
 
         <Box pt="3" style={{ 
@@ -134,16 +186,53 @@ const MainContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('token') !== null;
+  });
+
+  const login = async (username: string, password: string) => {
+    try {
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
+
+      const response = await fetch('http://localhost:8000/api/v1/token', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('isAuthenticated', 'true');
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('isAuthenticated');
+    setIsAuthenticated(false);
+  };
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainContent />} />
-        <Route path="/intent" element={<MainContent />} />
-        <Route path="/courses" element={<MainContent />} />
-        <Route path="/course" element={<MainContent />} />
-        <Route path="/course/:id" element={<MainContent />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MainContent />} />
+          <Route path="/intent" element={<MainContent />} />
+          <Route path="/courses" element={<MainContent />} />
+          <Route path="/course" element={<MainContent />} />
+          <Route path="/course/:id" element={<MainContent />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthContext.Provider>
   );
 };
 

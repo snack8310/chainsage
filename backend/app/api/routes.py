@@ -1,19 +1,39 @@
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Request, Query, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse, JSONResponse
 from app.agents.llm_agent import LLMAgent, UserContext, IntentAnalysis
 from app.agents.training_advisor_agent import TrainingAdvisorAgent
 from app.agents.ai_response_agent import AIResponseAgent
 from app.agents.course_recommendation_agent import CourseRecommendationAgent
 from app.core.config import get_settings
+from app.core.auth import verify_password, create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_password_hash
+from app.models.user import User, Token
 from pydantic import BaseModel
 import json
 import asyncio
 import logging
+from datetime import datetime, timedelta
+from typing import Optional
 
 # 配置日志
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# 模拟用户数据库
+fake_users_db = {
+    "admin": {
+        "username": "admin",
+        "hashed_password": get_password_hash("admin"),  # 重新生成密码哈希
+        "is_active": True,
+    }
+}
+
+# 打印密码哈希值用于调试
+print("Admin password hash:", fake_users_db["admin"]["hashed_password"])
 
 def get_llm_agent():
     return LLMAgent()
@@ -39,6 +59,35 @@ class IntentRequest(BaseModel):
     messages: list = []
     user_id: str
     session_id: str
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    token_data = verify_token(token)
+    if token_data is None or token_data.username is None:
+        raise credentials_exception
+    user = fake_users_db.get(token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = fake_users_db.get(form_data.username)
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_advisor_agent: TrainingAdvisorAgent, ai_response_agent: AIResponseAgent, course_recommendation_agent: CourseRecommendationAgent):
     """
