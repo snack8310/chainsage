@@ -6,6 +6,7 @@ import Chat from './components/Chat';
 import CourseMap from './components/CourseMap';
 import CourseDetail from './components/CourseDetail';
 import Login from './components/Login';
+import './App.css';
 
 // 创建一个简单的认证上下文
 interface AuthContextType {
@@ -98,21 +99,35 @@ const MainContent: React.FC = () => {
           position: 'relative'
         }}
       >
-        <Tabs.List style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <Tabs.List style={{ 
+          flexShrink: 0, 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '1rem',
+          padding: '0 1rem',
+          position: 'relative'
+        }}>
           <Tabs.Trigger value="chat">Chat</Tabs.Trigger>
           <Tabs.Trigger value="intent">Intent Analysis</Tabs.Trigger>
           <Tabs.Trigger value="courses">课程地图</Tabs.Trigger>
           <Tabs.Trigger value="course-detail">课程详情</Tabs.Trigger>
-          <Button 
-            color="red" 
-            variant="soft" 
-            onClick={() => {
-              logout();
-              navigate('/');
-            }}
-          >
-            Logout
-          </Button>
+          <div style={{ 
+            marginLeft: 'auto',
+            paddingLeft: '1rem',
+            borderLeft: '1px solid var(--gray-5)'
+          }}>
+            <Button 
+              color="red" 
+              variant="soft" 
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+              className="logout-button"
+            >
+              Logout
+            </Button>
+          </div>
         </Tabs.List>
 
         <Box pt="3" style={{ 
