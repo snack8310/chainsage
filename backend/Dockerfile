@@ -1,12 +1,23 @@
 # Build stage
 FROM python:3.11-slim as builder
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Set apt mirror to Aliyun
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+# Install system dependencies with retry
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     curl \
     gcc \
     python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* || \
+    (apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*)
 
 # Set pip mirror to Tsinghua
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
@@ -32,6 +43,10 @@ RUN pip install uvicorn pydantic-settings
 
 # Final stage
 FROM python:3.11-slim
+
+# Set apt mirror to Aliyun
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
 
 # Set pip mirror to Tsinghua
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
