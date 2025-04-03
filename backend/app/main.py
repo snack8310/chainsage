@@ -16,7 +16,7 @@ app = FastAPI(
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # 只允许前端域名
+    allow_origins=[settings.ALLOWED_ORIGINS],  # 使用配置中的前端地址
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -36,9 +36,10 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: str | None = None
 
     # 认证配置
-    SECRET_KEY: str = "your-secret-key-here"  # 在生产环境中应该使用环境变量
+    SECRET_KEY: str = "your-secret-key-here"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALLOWED_ORIGINS: str = "http://localhost:3000"  # 前端地址
 
     class Config:
         env_file = ".env"
