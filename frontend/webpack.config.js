@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -41,6 +42,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
+    new webpack.DefinePlugin({
+      'process.env.API_URL': JSON.stringify(process.env.API_URL || 'http://106.15.34.30:8060'),
+    }),
   ],
   devServer: {
     static: {
@@ -51,8 +55,7 @@ module.exports = {
     historyApiFallback: true,
     proxy: [{
       context: ['/api'],
-      target: 'http://106.15.34.30:8060',
-      // target: 'http://localhost:8000',
+      target: process.env.API_URL || 'http://106.15.34.30:8060',
     }],
   },
 }; 
