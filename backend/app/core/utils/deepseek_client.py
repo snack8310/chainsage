@@ -28,7 +28,7 @@ class DeepSeekClient(BaseLLMClient):
         self.api_version = settings.DEEPSEEK_API_VERSION
         self.model = settings.DEEPSEEK_MODEL
         self.headers = {
-            "api-key": self.api_key,
+            "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
         # 增加超时时间
@@ -39,7 +39,7 @@ class DeepSeekClient(BaseLLMClient):
         )
 
     def _get_url(self) -> str:
-        return f"{self.api_base}/openai/deployments/{self.model}/chat/completions"
+        return f"{self.api_base}/chat/completions"
 
     def _prepare_request_data(
         self,
@@ -60,6 +60,9 @@ class DeepSeekClient(BaseLLMClient):
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty
         ).model_dump()
+        
+        # 添加 model 字段
+        request_data["model"] = self.model
         
         # print(f"\n=== 准备请求数据 ===")
         # print(f"Stream enabled: {stream}")

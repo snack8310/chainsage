@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     
     # DeepSeek 配置
     DEEPSEEK_API_KEY: str = ""
-    DEEPSEEK_API_BASE: str = "http://chatgpt.tiny-test.wke-office.test.wacai.info"
+    DEEPSEEK_API_BASE: str = "https://api.deepseek.com"
     DEEPSEEK_API_VERSION: str = "2024-03-18"
-    DEEPSEEK_MODEL: str = "deepseek-v3"
+    DEEPSEEK_MODEL: str = "deepseek-chat"
     DEEPSEEK_TIMEOUT: int = 120  # 增加到120秒
     DEEPSEEK_CONNECT_TIMEOUT: int = 30  # 增加到30秒
     DEEPSEEK_READ_TIMEOUT: int = 120  # 增加到120秒
@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     
     # BGE 配置
     BGE_BASE_URL: str = "http://stark-vector.x-amc.wke-office.test.wacai.info"
+
+    # Aliyun 配置
+    ALIYUN_ACCESS_KEY_ID: str = ""
+    ALIYUN_ACCESS_KEY_SECRET: str = ""
     
     # 应用配置
     APP_NAME: str = "Chainsage API"
