@@ -11,7 +11,7 @@ COPY pyproject.toml ./
 COPY . .
 
 # Install dependencies
-RUN poetry install --no-dev
+RUN poetry install --only main
 
 # Expose port
 EXPOSE 8060
