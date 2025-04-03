@@ -6,6 +6,7 @@ import Chat from './components/Chat';
 import CourseMap from './components/CourseMap';
 import CourseDetail from './components/CourseDetail';
 import Login from './components/Login';
+import { API_CONFIG } from './config';
 import './App.css';
 
 // 创建一个简单的认证上下文
@@ -45,7 +46,7 @@ const MainContent: React.FC = () => {
         formData.append('username', username);
         formData.append('password', password);
 
-        const response = await fetch('http://localhost:8000/api/v1/token', {
+        const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth}`, {
           method: 'POST',
           body: formData,
         });
@@ -211,7 +212,7 @@ const App: React.FC = () => {
       formData.append('username', username);
       formData.append('password', password);
 
-      const response = await fetch('http://localhost:8000/api/v1/token', {
+      const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth}`, {
         method: 'POST',
         body: formData,
       });

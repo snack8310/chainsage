@@ -32,6 +32,8 @@
   },
   "scripts": {
     "start": "webpack serve --mode development --open",
+    "start:dev": "API_URL=http://localhost:8000 npm start",
+    "start:prod": "API_URL=http://106.15.34.30:8060 npm start",
     "build": "webpack --mode production"
   }
 }

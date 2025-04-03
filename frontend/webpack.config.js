@@ -43,7 +43,7 @@ module.exports = {
       template: './public/index.html',
     }),
     new webpack.DefinePlugin({
-      'process.env.API_URL': JSON.stringify(process.env.API_URL || 'http://106.15.34.30:8060'),
+      'process.env.API_URL': JSON.stringify(process.env.API_URL || 'http://localhost:8000'),
     }),
   ],
   devServer: {
@@ -55,7 +55,7 @@ module.exports = {
     historyApiFallback: true,
     proxy: [{
       context: ['/api'],
-      target: process.env.API_URL || 'http://106.15.34.30:8060',
+      target: process.env.API_URL || 'http://localhost:8000',
     }],
   },
 }; 

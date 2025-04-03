@@ -18,7 +18,7 @@ COPY .babelrc ./
 
 # 设置构建时的环境变量
 ARG API_URL
-ENV API_URL=${API_URL:-http://106.15.34.30:8060}
+ENV API_URL=${API_URL:-http://localhost:8000}
 
 # 构建应用
 RUN npm run build
@@ -43,7 +43,7 @@ COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/.babelrc ./
 
 # 设置运行时环境变量
-ENV API_URL=${API_URL:-http://106.15.34.30:8060}
+ENV API_URL=${API_URL:-http://localhost:8000}
 
 # 暴露端口
 EXPOSE 8061
