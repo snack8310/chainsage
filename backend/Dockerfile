@@ -5,7 +5,7 @@ WORKDIR /app
 
 ADD ./* ./
 RUN ls -rtl
-RUN poetry install --no-dev
+# RUN poetry install --no-dev
 
 # Expose port
 EXPOSE 8000
