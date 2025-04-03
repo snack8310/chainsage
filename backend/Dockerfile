@@ -3,12 +3,18 @@ FROM registry.cn-shanghai.aliyuncs.com/goblin-oversea/python-poetry:3.11
 # Set working directory
 WORKDIR /app
 
-ADD ./* ./
-RUN ls -rtl
-# RUN poetry install --no-dev
+# Set environment variables for Poetry
+ENV POETRY_REPOSITORIES_ALIYUN_URL=https://mirrors.aliyun.com/pypi/simple/
+
+# Copy project files
+COPY pyproject.toml ./
+COPY . .
+
+# Install dependencies
+RUN poetry install --no-dev
 
 # Expose port
-EXPOSE 8000
+EXPOSE 8060
 
 # Run the application
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8060"]

@@ -51,7 +51,8 @@ module.exports = {
     historyApiFallback: true,
     proxy: [{
       context: ['/api'],
-      target: 'http://localhost:8000',
+      target: 'http://106.15.34.30:8060',
+      // target: 'http://localhost:8000',
     }],
   },
 }; 
