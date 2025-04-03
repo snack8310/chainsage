@@ -37,12 +37,16 @@ RUN npm install
 # 从构建阶段复制构建产物
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/webpack.config.js ./
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/.babelrc ./
 
 # 设置运行时环境变量
 ENV API_URL=${API_URL:-http://106.15.34.30:8060}
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 8061
 
 # 启动应用
 CMD ["npm", "start"] 
