@@ -8,9 +8,9 @@ COPY pyproject.toml poetry.lock* ./
 
 # Configure poetry to not create a virtual environment inside the container
 RUN poetry config virtualenvs.create false
-
+RUN poetry config repositories.aliyun https://mirrors.aliyun.com/pypi/simple/
 # Install dependencies
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --no-dev --no-interaction --no-ansi --verbose
 
 # Copy application code
 COPY . .
