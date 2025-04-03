@@ -19,6 +19,7 @@ bcrypt = "3.2.2"
 aliyun-python-sdk-core = "^2.13.36"
 aliyun-python-sdk-alinlp = "^1.0.5"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+itsdangerous = "^2.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

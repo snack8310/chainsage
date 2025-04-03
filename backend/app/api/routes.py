@@ -20,14 +20,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 # 模拟用户数据库
 fake_users_db = {
     "admin": {
         "username": "admin",
-        "hashed_password": get_password_hash("admin"),  # 重新生成密码哈希
+        "hashed_password": get_password_hash("admin"),
         "is_active": True,
     }
 }
@@ -50,6 +47,8 @@ def get_course_recommendation_agent():
 class ChatRequest(BaseModel):
     message: str
     stream: bool = False
+    user_id: str
+    session_id: str
 
 class ChatResponse(BaseModel):
     response: str
@@ -60,34 +59,85 @@ class IntentRequest(BaseModel):
     user_id: str
     session_id: str
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    token_data = verify_token(token)
-    if token_data is None or token_data.username is None:
-        raise credentials_exception
-    user = fake_users_db.get(token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
+async def get_current_user(request: Request):
+    session = request.session
+    if not session.get("user"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    return session["user"]
 
-@router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+@router.post("/login")
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     user = fake_users_db.get(form_data.username)
     if not user or not verify_password(form_data.password, user["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user["username"]}, expires_delta=access_token_expires
+    # 只存储必要的用户信息
+    request.session["user"] = {
+        "username": user["username"],
+        "is_active": user["is_active"]
+    }
+    response = JSONResponse(content={"message": "Login successful"})
+    response.set_cookie(
+        key="session",
+        value=request.session.get("session_id", ""),
+        max_age=1800,
+        httponly=True,
+        samesite="lax"
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return response
+
+@router.post("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return {"message": "Logout successful"}
+
+@router.post("/chat")
+async def chat(
+    request: ChatRequest,
+    current_user: dict = Depends(get_current_user),
+    llm_agent: LLMAgent = Depends(get_llm_agent)
+):
+    """
+    处理普通聊天消息的API接口
+    """
+    try:
+        logger.info(f"收到聊天消息: {request.message}")
+        logger.info(f"用户ID: {request.user_id}, 会话ID: {request.session_id}")
+
+        if request.stream:
+            return StreamingResponse(
+                llm_agent.get_stream_response(request.message),
+                media_type="text/event-stream",
+                headers={
+                    "Cache-Control": "no-cache, no-transform",
+                    "Connection": "keep-alive",
+                    "Access-Control-Allow-Origin": "*",
+                    "X-Accel-Buffering": "no",
+                    "Content-Type": "text/event-stream",
+                    "Transfer-Encoding": "chunked",
+                    "Connection": "keep-alive",
+                    "X-Content-Type-Options": "nosniff",
+                    "X-Frame-Options": "DENY",
+                    "X-XSS-Protection": "1; mode=block",
+                    "Content-Security-Policy": "default-src 'self'",
+                    "Keep-Alive": "timeout=300",
+                }
+            )
+        else:
+            response = await llm_agent.get_response(request.message)
+            return ChatResponse(response=response)
+
+    except Exception as e:
+        logger.error(f"处理聊天消息时出错: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"处理聊天消息时出错: {str(e)}"
+        )
 
 async def stream_analysis(request: IntentRequest, llm_agent: LLMAgent, training_advisor_agent: TrainingAdvisorAgent, ai_response_agent: AIResponseAgent, course_recommendation_agent: CourseRecommendationAgent):
     """
@@ -266,4 +316,20 @@ async def analyze_intent(
             "Content-Security-Policy": "default-src 'self'",
             "Keep-Alive": "timeout=300",
         }
-    ) 
+    )
+
+@router.get("/check-auth")
+async def check_auth(request: Request):
+    try:
+        session = request.session
+        if not session.get("user"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+        return {"authenticated": True}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        ) 

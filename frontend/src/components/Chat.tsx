@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Box, Text, Container, TextField, Button, ScrollArea, Avatar, Flex } from '@radix-ui/themes';
+import { AuthContext } from '../App';
 
 interface Message {
   id: number;
@@ -12,10 +13,11 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated } = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !isAuthenticated) return;
 
     const userMessage: Message = {
       id: Date.now(),
@@ -34,8 +36,23 @@ const Chat: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: input }),
+        credentials: 'include',
+        body: JSON.stringify({ 
+          message: input,
+          user_id: 'default_user',
+          session_id: Date.now().toString()
+        }),
       });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = '/';
+          return;
+        }
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        throw new Error('Failed to send message');
+      }
 
       const data = await response.json();
       const assistantMessage: Message = {

@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     QDRANT_PORT: int = 6333
     QDRANT_API_KEY: str | None = None
 
+    # 认证配置
+    SECRET_KEY: str = "your-secret-key-here"  # 在生产环境中应该使用环境变量
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     class Config:
         env_file = ".env"
         case_sensitive = True

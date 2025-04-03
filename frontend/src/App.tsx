@@ -26,7 +26,7 @@ const MainContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('chat');
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = React.useContext(AuthContext);
+  const { isAuthenticated, login, logout } = React.useContext(AuthContext);
 
   // 根据当前路径设置活动标签
   React.useEffect(() => {
@@ -36,29 +36,35 @@ const MainContent: React.FC = () => {
       setActiveTab('courses');
     } else if (location.pathname === '/course') {
       setActiveTab('course-detail');
+    } else if (location.pathname === '/intent') {
+      setActiveTab('intent');
+    } else {
+      setActiveTab('chat');
     }
   }, [location.pathname]);
 
   if (!isAuthenticated) {
     return <Login onLogin={async (username, password) => {
       try {
-        const formData = new FormData();
-        formData.append('username', username);
-        formData.append('password', password);
-
         const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth}`, {
           method: 'POST',
-          body: formData,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          credentials: 'include',
+          body: new URLSearchParams({
+            username: username,
+            password: password,
+          }),
         });
 
         if (!response.ok) {
           throw new Error('Login failed');
         }
 
-        const data = await response.json();
-        localStorage.setItem('token', data.access_token);
-        localStorage.setItem('isAuthenticated', 'true');
-        window.location.reload();
+        // 登录成功后设置认证状态并导航到主界面
+        login(username, password);
+        navigate('/');
       } catch (error) {
         console.error('Login error:', error);
         throw error;
@@ -202,28 +208,26 @@ const MainContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('token') !== null;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const login = async (username: string, password: string) => {
     try {
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('password', password);
-
       const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth}`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        credentials: 'include',
+        body: new URLSearchParams({
+          username: username,
+          password: password,
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Login failed');
       }
 
-      const data = await response.json();
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('isAuthenticated', 'true');
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);
@@ -231,10 +235,16 @@ const App: React.FC = () => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('isAuthenticated');
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await fetch(`${API_CONFIG.baseURL}/api/v1/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
