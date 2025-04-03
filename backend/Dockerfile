@@ -1,4 +1,4 @@
-FROM registry-vpc.us-west-1.aliyuncs.com/goblin-oversea/python-poetry:3.11
+FROM registry.cn-shanghai.aliyuncs.com/goblin-oversea/python-poetry:3.11
 
 # Set working directory
 WORKDIR /app
