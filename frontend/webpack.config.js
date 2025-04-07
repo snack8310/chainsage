@@ -53,18 +53,17 @@ module.exports = {
     port: 3000,
     hot: true,
     historyApiFallback: true,
-    proxy: {
-      '/api': {
-        target: process.env.API_URL || 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-        cookieDomainRewrite: '',
-        onProxyRes: function(proxyRes, req, res) {
-          // 确保所有响应都包含必要的 CORS 头
-          proxyRes.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000';
-          proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
-        }
+    proxy: [{
+      context: ['/api'],
+      target: process.env.API_URL || 'http://localhost:8000',
+      changeOrigin: true,
+      secure: false,
+      cookieDomainRewrite: '',
+      onProxyRes: function(proxyRes, req, res) {
+        // 确保所有响应都包含必要的 CORS 头
+        proxyRes.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000';
+        proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
       }
-    }
+    }]
   },
 }; 

@@ -46,7 +46,7 @@ COPY --from=builder /app/.babelrc ./
 ENV API_URL=${API_URL:-http://localhost:8000}
 
 # 暴露端口
-EXPOSE 8061
+EXPOSE 3000
 
 # 启动应用
 CMD ["npm", "start"] 
