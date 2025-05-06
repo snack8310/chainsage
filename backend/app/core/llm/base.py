@@ -4,7 +4,7 @@ from enum import Enum
 
 class LLMProvider(Enum):
     DEEPSEEK = "deepseek"
-    OPENAI = "openai"
+    WC_LLM = "wc_llm"  # 添加 WC LLM 提供商
     # 可以添加更多提供商
 
 class BaseLLMClient(ABC):
@@ -44,8 +44,8 @@ class LLMClientFactory:
             if provider == LLMProvider.DEEPSEEK:
                 from app.core.utils.deepseek_client import DeepSeekClient
                 cls._clients[provider] = DeepSeekClient()
-            elif provider == LLMProvider.OPENAI:
-                from app.core.utils.openai_client import OpenAIClient
-                cls._clients[provider] = OpenAIClient()
+            elif provider == LLMProvider.WC_LLM:
+                from app.core.utils.wc_llm_client import WCLLMClient
+                cls._clients[provider] = WCLLMClient()
             # 可以添加更多提供商
         return cls._clients[provider] 

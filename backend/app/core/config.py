@@ -3,7 +3,8 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # LLM 配置
-    LLM_PROVIDER: str = "deepseek"  # 默认使用 DeepSeek
+    # LLM_PROVIDER: str = "deepseek"  # 默认使用 DeepSeek
+    LLM_PROVIDER: str = "wc_llm"  # 使用 WC LLM
     
     # DeepSeek 配置
     DEEPSEEK_API_KEY: str = ""
@@ -13,6 +14,15 @@ class Settings(BaseSettings):
     DEEPSEEK_TIMEOUT: int = 120  # 增加到120秒
     DEEPSEEK_CONNECT_TIMEOUT: int = 30  # 增加到30秒
     DEEPSEEK_READ_TIMEOUT: int = 120  # 增加到120秒
+    
+    # WC LLM 配置
+    WC_LLM_API_KEY: str = ""
+    WC_LLM_API_BASE: str = "https://api.wc-llm.com"
+    WC_LLM_API_VERSION: str = "2024-03-18"
+    WC_LLM_MODEL: str = "wc-chat"
+    WC_LLM_TIMEOUT: int = 120
+    WC_LLM_CONNECT_TIMEOUT: int = 30
+    WC_LLM_READ_TIMEOUT: int = 120
     
     # OpenAI 配置
     OPENAI_API_KEY: str = ""
