@@ -1,6 +1,22 @@
 from abc import ABC, abstractmethod
 from typing import AsyncGenerator, Dict, List, Optional, Union, Any
 from enum import Enum
+from pydantic import BaseModel, Field
+
+class MessageRole(str, Enum):
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    TOOL = "tool"
+    FUNCTION = "function"
+
+class ChatMessage(BaseModel):
+    role: MessageRole
+    content: str
+    name: Optional[str] = None
+    function_call: Optional[Dict[str, Any]] = None
+    tool_calls: Optional[List[Dict[str, Any]]] = None
+    tool_call_id: Optional[str] = None
 
 class LLMProvider(Enum):
     DEEPSEEK = "deepseek"
@@ -11,7 +27,7 @@ class BaseLLMClient(ABC):
     @abstractmethod
     async def create_chat_completion(
         self,
-        messages: List[Dict[str, str]],
+        messages: List[ChatMessage],
         stream: bool = False,
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
@@ -25,7 +41,7 @@ class BaseLLMClient(ABC):
     @abstractmethod
     async def create_chat_completion_stream(
         self,
-        messages: List[Dict[str, str]],
+        messages: List[ChatMessage],
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         top_p: float = 1.0,

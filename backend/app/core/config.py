@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     WC_LLM_API_KEY: str = ""
     WC_LLM_API_BASE: str = "https://api.wc-llm.com"
     WC_LLM_API_VERSION: str = "2024-03-18"
-    WC_LLM_MODEL: str = "wc-chat"
+    WC_LLM_MODEL: str = "deepseek-chat"
     WC_LLM_TIMEOUT: int = 120
     WC_LLM_CONNECT_TIMEOUT: int = 30
     WC_LLM_READ_TIMEOUT: int = 120
