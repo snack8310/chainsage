@@ -54,7 +54,7 @@ class LLMService:
         """
         统一的流式聊天完成接口
         """
-        async for chunk in self.client.create_chat_completion_stream(
+        async for chunk in await self.client.create_chat_completion_stream(
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
