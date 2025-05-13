@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, Text, Container, Flex, Grid, Heading, Card } from '@radix-ui/themes';
 import MainLayout from './layout/MainLayout';
+import { useRouter } from 'next/router';
 
 const styles = `
   .course-card {
@@ -74,6 +75,19 @@ const courses = [
 ];
 
 const Courses: React.FC<CoursesProps> = ({ username, onLogout }) => {
+  const router = useRouter();
+
+  const handleCourseClick = (courseId: number) => {
+    switch (courseId) {
+      case 1:
+        router.push('/courses/python');
+        break;
+      // Add more cases for other courses as they are implemented
+      default:
+        console.log('Course not implemented yet');
+    }
+  };
+
   return (
     <MainLayout username={username} onLogout={onLogout}>
       <style>{styles}</style>
@@ -97,13 +111,18 @@ const Courses: React.FC<CoursesProps> = ({ username, onLogout }) => {
       <Container style={{ padding: '4rem 0' }}>
         <Grid columns="3" gap="6">
           {courses.map((course) => (
-            <Card key={course.id} className="course-card" style={{
-              padding: '2rem',
-              background: 'white',
-              borderRadius: '12px',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-              cursor: 'pointer'
-            }}>
+            <Card
+              key={course.id}
+              className="course-card"
+              style={{
+                padding: '2rem',
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                cursor: 'pointer'
+              }}
+              onClick={() => handleCourseClick(course.id)}
+            >
               <Flex direction="column" gap="4">
                 <Text size="8" style={{ fontSize: '3rem' }}>{course.image}</Text>
                 <Box>
