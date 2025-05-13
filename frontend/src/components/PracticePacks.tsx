@@ -69,12 +69,7 @@ const practicePacks: PracticePack[] = [
   }
 ];
 
-interface PracticePacksProps {
-  username: string;
-  onLogout: () => void;
-}
-
-const PracticePacks: React.FC<PracticePacksProps> = ({ username, onLogout }) => {
+const PracticePacks: React.FC = () => {
   const router = useRouter();
 
   const handleStartPractice = (packId: string) => {

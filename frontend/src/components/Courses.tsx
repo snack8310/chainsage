@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Button, Text, Container, Flex, Grid, Heading, Card } from '@radix-ui/themes';
-import MainLayout from './layout/MainLayout';
 import { useRouter } from 'next/router';
 
 const styles = `
@@ -11,11 +10,6 @@ const styles = `
     transform: translateY(-4px);
   }
 `;
-
-interface CoursesProps {
-  username: string;
-  onLogout: () => void;
-}
 
 const courses = [
   {
@@ -74,7 +68,7 @@ const courses = [
   }
 ];
 
-const Courses: React.FC<CoursesProps> = ({ username, onLogout }) => {
+const Courses: React.FC = () => {
   const router = useRouter();
 
   const handleCourseClick = (courseId: number) => {
@@ -89,7 +83,7 @@ const Courses: React.FC<CoursesProps> = ({ username, onLogout }) => {
   };
 
   return (
-    <MainLayout username={username} onLogout={onLogout}>
+    <>
       <style>{styles}</style>
       {/* Hero Section */}
       <Box style={{
@@ -181,7 +175,7 @@ const Courses: React.FC<CoursesProps> = ({ username, onLogout }) => {
           </Button>
         </Flex>
       </Container>
-    </MainLayout>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Button, Text, Container, Flex, Grid, Heading, Card } from '@radix-ui/themes';
-import MainLayout from '../../components/layout/MainLayout';
 import { useRouter } from 'next/router';
 
 const styles = `
@@ -11,11 +10,6 @@ const styles = `
     transform: translateY(-4px);
   }
 `;
-
-interface PythonCourseProps {
-  username: string;
-  onLogout: () => void;
-}
 
 const lessons = [
   {
@@ -104,7 +98,7 @@ const lessons = [
   }
 ];
 
-const PythonCourse: React.FC<PythonCourseProps> = ({ username, onLogout }) => {
+const PythonCourse: React.FC = () => {
   const router = useRouter();
 
   const handleLessonClick = (lessonId: number) => {
@@ -112,7 +106,7 @@ const PythonCourse: React.FC<PythonCourseProps> = ({ username, onLogout }) => {
   };
 
   return (
-    <MainLayout username={username} onLogout={onLogout}>
+    <>
       <style>{styles}</style>
       {/* Hero Section */}
       <Box style={{
@@ -249,7 +243,7 @@ const PythonCourse: React.FC<PythonCourseProps> = ({ username, onLogout }) => {
           </Flex>
         </Container>
       </Box>
-    </MainLayout>
+    </>
   );
 };
 
