@@ -1,8 +1,8 @@
 import type { NextPage } from 'next';
-import App from '../App';
+import Courses from '../components/Courses';
 
 const CoursesPage: NextPage = () => {
-  return <App />;
+  return <Courses username="User" onLogout={() => {}} />;
 };
 
 export default CoursesPage; 
