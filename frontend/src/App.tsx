@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Theme } from '@radix-ui/themes';
 import { useRouter } from 'next/router';
 import Login from './components/Login';
 import Home from './components/Home';
@@ -38,14 +37,10 @@ const App: React.FC = () => {
     router.push('/login');
   };
 
-  return (
-    <Theme>
-      {isLoggedIn ? (
-        <Home username={username} onLogout={handleLogout} />
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
-    </Theme>
+  return isLoggedIn ? (
+    <Home username={username} onLogout={handleLogout} />
+  ) : (
+    <Login onLogin={handleLogin} />
   );
 };
 
