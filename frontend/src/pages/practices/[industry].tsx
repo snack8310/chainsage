@@ -1,6 +1,7 @@
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import IndustryPractice from '../../components/IndustryPractice';
+import PracticeDetail from '../../components/PracticeDetail';
+import MainLayout from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
 
 const IndustryPracticePage: NextPage = () => {
@@ -13,11 +14,12 @@ const IndustryPracticePage: NextPage = () => {
   }
 
   return (
-    <IndustryPractice 
-      industry={industry} 
-      username={username} 
-      onLogout={logout} 
-    />
+    <MainLayout username={username} onLogout={logout}>
+      <PracticeDetail 
+        username={username} 
+        onLogout={logout} 
+      />
+    </MainLayout>
   );
 };
 

@@ -77,7 +77,7 @@ interface PracticePacksProps {
 const PracticePacks: React.FC<PracticePacksProps> = ({ username, onLogout }) => {
   const router = useRouter();
 
-  const handlePackClick = (packId: string) => {
+  const handleStartPractice = (packId: string) => {
     router.push(`/practices/${packId}`);
   };
 
@@ -93,7 +93,6 @@ const PracticePacks: React.FC<PracticePacksProps> = ({ username, onLogout }) => 
           <div 
             key={pack.id} 
             className={styles.packCard}
-            onClick={() => handlePackClick(pack.id)}
           >
             <div className={styles.packHeader}>
               <div className={styles.icon}>{pack.icon}</div>
@@ -111,7 +110,12 @@ const PracticePacks: React.FC<PracticePacksProps> = ({ username, onLogout }) => 
                 <span className={styles.metaValue}>{pack.lessons}</span>
               </div>
             </div>
-            <button className={styles.startButton}>开始学习</button>
+            <button 
+              className={styles.startButton}
+              onClick={() => handleStartPractice(pack.id)}
+            >
+              开始学习
+            </button>
           </div>
         ))}
       </div>
