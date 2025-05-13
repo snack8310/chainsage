@@ -1,6 +1,9 @@
 export const API_CONFIG = {
   baseURL: process.env.API_URL || 'http://localhost:8000',
+  useMock: process.env.USE_MOCK === 'true',
   endpoints: {
-    auth: '/api/v1/login',
+    auth: {
+      login: '/api/v1/login',
+    },
   },
 }; 
