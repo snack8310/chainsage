@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_ENV=development API_URL=http://localhost:3001 next dev",
+    "dev:mock": "NODE_ENV=development USE_MOCK=true next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production API_URL=https://api.chainsage.com next start",
     "lint": "next lint"
   },
   "dependencies": {
