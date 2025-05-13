@@ -41,7 +41,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, username, onLogout })
               </Flex>
             </Flex>
             <Flex gap="3" align="center">
-              <Text size="2" color="gray">Welcome, {username}</Text>
+              <Box style={{ 
+                padding: '0.5rem 1rem',
+                background: 'var(--gray-2)',
+                borderRadius: '6px'
+              }}>
+                <Text size="2" color="gray">Welcome, {username}</Text>
+              </Box>
               <Button onClick={onLogout}>Logout</Button>
             </Flex>
           </Flex>

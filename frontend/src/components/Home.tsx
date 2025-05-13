@@ -17,37 +17,36 @@ const Home: React.FC<HomeProps> = ({ username, onLogout }) => {
   return (
     <MainLayout username={username} onLogout={onLogout}>
       <style>{styles}</style>
-      {/* Hero Section */}
-      <Box style={{
-        padding: '6rem 0',
-        background: 'linear-gradient(135deg, var(--blue-9), var(--indigo-9))',
-        color: 'white'
-      }}>
-        <Container>
-          <Flex direction="column" align="center" gap="6">
-            <Heading size="9" style={{ textAlign: 'center' }}>
-              Learn to Code with AI
-            </Heading>
-            <Text size="5" style={{ textAlign: 'center', maxWidth: '600px' }}>
-              Master programming through interactive lessons, real-world projects, and personalized AI guidance
-            </Text>
-            <Flex gap="4">
-              <Button size="4" variant="solid" style={{ background: 'white', color: 'var(--blue-9)' }}>
-                Start Learning
-              </Button>
-              <Button size="4" variant="outline" style={{ borderColor: 'white', color: 'white' }}>
-                View Courses
-              </Button>
-            </Flex>
-          </Flex>
-        </Container>
-      </Box>
-
-      {/* Main Content and Sidebar */}
       <Container style={{ padding: '4rem 0' }}>
         <Flex gap="6">
           {/* Main Content */}
           <Box style={{ flex: 1 }}>
+            {/* Hero Section */}
+            <Box style={{
+              padding: '3rem',
+              background: 'linear-gradient(135deg, var(--blue-9), var(--indigo-9))',
+              color: 'white',
+              borderRadius: '12px',
+              marginBottom: '3rem'
+            }}>
+              <Flex direction="column" gap="4">
+                <Heading size="8">
+                  Learn to Code with AI
+                </Heading>
+                <Text size="4" style={{ maxWidth: '500px' }}>
+                  Master programming through interactive lessons, real-world projects, and personalized AI guidance
+                </Text>
+                <Flex gap="4">
+                  <Button size="3" variant="solid" style={{ background: 'white', color: 'var(--blue-9)' }}>
+                    Start Learning
+                  </Button>
+                  <Button size="3" variant="outline" style={{ borderColor: 'white', color: 'white' }}>
+                    View Courses
+                  </Button>
+                </Flex>
+              </Flex>
+            </Box>
+
             {/* Popular Courses Section */}
             <Heading size="6" mb="6" align="center">Popular Courses</Heading>
             <Grid columns="2" gap="6">
