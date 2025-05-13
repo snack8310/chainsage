@@ -1,8 +1,10 @@
 import type { NextPage } from 'next';
-import App from '../App';
+import IndustrySelection from '../components/IndustrySelection';
+import { useAuth } from '../contexts/AuthContext';
 
 const PracticesPage: NextPage = () => {
-  return <App />;
+  const { username, logout } = useAuth();
+  return <IndustrySelection username={username} onLogout={logout} />;
 };
 
 export default PracticesPage; 
