@@ -28,7 +28,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, username, onLogout })
         <Container>
           <Flex justify="between" align="center">
             <Flex gap="4" align="center">
-              <Text size="5" weight="bold">ChainSage</Text>
+              <Link href="/" style={{ textDecoration: 'none' }}>
+                <Text size="5" weight="bold">ChainSage</Text>
+              </Link>
               <Flex gap="3">
                 <Link href="/courses" style={{ textDecoration: 'none' }}>
                   <Text size="3" color="gray">Courses</Text>
