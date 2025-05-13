@@ -2,11 +2,6 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/PracticeDetail.module.css';
 
-interface PracticeDetailProps {
-  username: string;
-  onLogout: () => void;
-}
-
 const practiceContents = {
   retail: {
     title: '零售行业实践',
@@ -121,7 +116,7 @@ const practiceContents = {
   // 其他行业的内容可以类似添加
 };
 
-const PracticeDetail: React.FC<PracticeDetailProps> = ({ username, onLogout }) => {
+const PracticeDetail: React.FC = () => {
   const router = useRouter();
   const { industry } = router.query;
 

@@ -1,8 +1,10 @@
 import type { NextPage } from 'next';
-import App from '../App';
+import Login from '../components/Login';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: NextPage = () => {
-  return <App />;
+  const { login } = useAuth();
+  return <Login onLogin={login} />;
 };
 
 export default LoginPage; 

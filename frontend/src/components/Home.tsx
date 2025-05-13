@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Text, Container, Flex, Grid, Heading, Avatar, Card } from '@radix-ui/themes';
-import MainLayout from './layout/MainLayout';
+import { useAuth } from '../contexts/AuthContext';
 
 const styles = `
   .course-card:hover {
@@ -8,14 +8,11 @@ const styles = `
   }
 `;
 
-interface HomeProps {
-  username: string;
-  onLogout: () => void;
-}
+const Home: React.FC = () => {
+  const { username } = useAuth();
 
-const Home: React.FC<HomeProps> = ({ username, onLogout }) => {
   return (
-    <MainLayout username={username} onLogout={onLogout}>
+    <>
       <style>{styles}</style>
       <Container style={{ padding: '4rem 0' }}>
         <Flex gap="6">
@@ -187,7 +184,7 @@ const Home: React.FC<HomeProps> = ({ username, onLogout }) => {
           </Button>
         </Flex>
       </Container>
-    </MainLayout>
+    </>
   );
 };
 
