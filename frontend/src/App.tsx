@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Login from './components/Login';
 import Home from './components/Home';
+import { mockAuthService } from './services/mockAuth';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -10,21 +11,9 @@ const App: React.FC = () => {
 
   const handleLogin = async (username: string, password: string) => {
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
+      const response = await mockAuthService.login(username, password);
       setIsLoggedIn(true);
-      setUsername(data.username);
+      setUsername(response.username);
       router.push('/');
     } catch (error) {
       throw error;
