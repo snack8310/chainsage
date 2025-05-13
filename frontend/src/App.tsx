@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Login from './components/Login';
 import Home from './components/Home';
-import { mockAuthService } from './services/mockAuth';
+import { ApiFactory } from './services/api/factory';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
   const router = useRouter();
+  const authService = ApiFactory.getInstance().getAuthService();
 
   const handleLogin = async (username: string, password: string) => {
     try {
-      const response = await mockAuthService.login(username, password);
+      const response = await authService.login({ username, password });
       setIsLoggedIn(true);
       setUsername(response.username);
       router.push('/');
