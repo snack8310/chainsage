@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Theme } from '@radix-ui/themes';
+import { useRouter } from 'next/router';
 import Login from './components/Login';
 import Home from './components/Home';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
+  const router = useRouter();
 
   const handleLogin = async (username: string, password: string) => {
     try {
@@ -24,6 +26,7 @@ const App: React.FC = () => {
       const data = await response.json();
       setIsLoggedIn(true);
       setUsername(data.username);
+      router.push('/');
     } catch (error) {
       throw error;
     }
@@ -32,6 +35,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername('');
+    router.push('/login');
   };
 
   return (
