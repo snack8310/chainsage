@@ -1,0 +1,118 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.titleSection {
+  margin-bottom: 3rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  margin: 0;
+}
+
+.packsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.packCard {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.packCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.packHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  font-size: 2.5rem;
+}
+
+.difficulty {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.packTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 1rem 0;
+}
+
+.description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  min-height: 3em;
+}
+
+.metaInfo {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metaLabel {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.metaValue {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.startButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.startButton:hover {
+  background-color: #1976d2;
+} 
