@@ -10,11 +10,7 @@ COPY package*.json ./
 RUN npm install
 
 # 复制源代码
-COPY src ./src
-COPY public ./public
-COPY webpack.config.js ./
-COPY tsconfig.json ./
-COPY .babelrc ./
+COPY . .
 
 # 设置构建时的环境变量
 ARG API_URL
@@ -31,19 +27,17 @@ WORKDIR /app
 # 复制 package.json 和 package-lock.json
 COPY package*.json ./
 
-# 安装所有依赖（包括开发依赖）
-RUN npm install
+# 只安装生产依赖
+RUN npm install --production
 
 # 从构建阶段复制构建产物
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/webpack.config.js ./
-COPY --from=builder /app/tsconfig.json ./
-COPY --from=builder /app/.babelrc ./
+COPY --from=builder /app/package.json ./package.json
 
 # 设置运行时环境变量
 ENV API_URL=${API_URL:-http://localhost:8000}
+ENV USE_MOCK=${USE_MOCK:-false}
 
 # 暴露端口
 EXPOSE 3000
