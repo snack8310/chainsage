@@ -38,6 +38,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, username, onLogout })
                 <Link href="/practices" style={{ textDecoration: 'none' }}>
                   <Text size="3" color="gray">Practices</Text>
                 </Link>
+                <Link href="/chat" style={{ textDecoration: 'none' }}>
+                  <Text size="3" color="gray">Chat</Text>
+                </Link>
               </Flex>
             </Flex>
             <Flex gap="3" align="center">
