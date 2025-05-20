@@ -6,19 +6,14 @@ import CourseNavigation from '../../../../components/CourseNavigation';
 const QuizPage: React.FC = () => {
   const router = useRouter();
   const [userInput, setUserInput] = useState('');
-  const [chatHistory, setChatHistory] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
 
   const handleSubmit = () => {
     if (!userInput.trim()) return;
     
-    // 添加用户输入到聊天历史
-    setChatHistory(prev => [...prev, { role: 'user', content: userInput }]);
-    
     // 模拟AI响应
-    const aiResponse = "让我帮你分析一下这个提示词...\n\n1. 角色设定：你设定了明确的角色\n2. 任务要求：目标清晰\n3. 输出格式：结构合理\n\n建议：可以添加一些具体的示例，这样AI能更好地理解你的需求。";
-    setChatHistory(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-    
-    setUserInput('');
+    const response = "让我帮你分析一下这个提示词...\n\n1. 角色设定：你设定了明确的角色\n2. 任务要求：目标清晰\n3. 输出格式：结构合理\n\n建议：可以添加一些具体的示例，这样AI能更好地理解你的需求。";
+    setAiResponse(response);
   };
 
   return (
@@ -92,53 +87,51 @@ const QuizPage: React.FC = () => {
           }}>
             <Heading size="4" mb="2">交互练习</Heading>
             
-            {/* 聊天历史 */}
-            <Box 
-              style={{ 
-                flex: 1,
-                overflowY: 'auto',
-                marginBottom: '0.75rem',
-                padding: '0.75rem',
-                background: 'var(--gray-2)',
-                borderRadius: '4px'
-              }}
-            >
-              {chatHistory.map((message, index) => (
-                <Box 
-                  key={index} 
-                  mb="2"
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    background: message.role === 'user' ? 'var(--blue-3)' : 'white',
-                    borderRadius: '4px',
-                    maxWidth: '80%',
-                    marginLeft: message.role === 'user' ? 'auto' : '0'
-                  }}
-                >
-                  <Text>{message.content}</Text>
-                </Box>
-              ))}
-            </Box>
-
             {/* 输入区域 */}
-            <Flex gap="2">
+            <Box mb="4">
               <TextArea
                 placeholder="在这里输入你的提示词..."
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                style={{ flex: 1 }}
+                style={{ width: '100%', marginBottom: '1rem' }}
               />
               <Button onClick={handleSubmit}>发送</Button>
-            </Flex>
+            </Box>
 
-            <Flex justify="end" mt="2">
-              <Button
-                variant="outline"
-                onClick={() => router.push('/courses/ai-tools-basic')}
+            {/* AI响应区域 */}
+            <Box 
+              style={{ 
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                background: 'var(--gray-2)',
+                borderRadius: '4px',
+                overflow: 'hidden'
+              }}
+            >
+              <Box 
+                style={{ 
+                  padding: '0.75rem 1rem',
+                  background: 'var(--gray-3)',
+                  borderBottom: '1px solid var(--gray-4)'
+                }}
               >
-                返回课程
-              </Button>
-            </Flex>
+                <Text weight="medium">AI 响应</Text>
+              </Box>
+              <Box 
+                style={{ 
+                  flex: 1,
+                  padding: '1rem',
+                  overflowY: 'auto'
+                }}
+              >
+                {aiResponse ? (
+                  <Text style={{ whiteSpace: 'pre-wrap' }}>{aiResponse}</Text>
+                ) : (
+                  <Text color="gray">发送提示词后，AI 将在这里给出反馈和建议</Text>
+                )}
+              </Box>
+            </Box>
           </Box>
         </Box>
       </Box>
