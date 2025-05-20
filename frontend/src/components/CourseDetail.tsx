@@ -1,48 +1,36 @@
 import React from 'react';
 import { Box, Container, Heading, Text, Flex, Grid, Card, Badge, Button } from '@radix-ui/themes';
 
-interface CourseDetailProps {
-  course: {
-    title: string;
-    description: string;
-    duration: string;
-    level: string;
-    skills: string[];
-    modules: {
-      title: string;
-      description: string;
-      lessons: {
-        title: string;
-        duration: string;
-        type: 'video' | 'practice' | 'quiz';
-      }[];
-    }[];
-  };
+interface Lesson {
+  title: string;
+  duration: string;
+  type: 'video' | 'practice' | 'quiz';
+  path?: string;
 }
 
-const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
-  return (
-    <Container style={{ padding: '4rem 0' }}>
-      {/* Course Header */}
-      <Box mb="8">
-        <Flex direction="column" gap="4">
-          <Heading size="8">{course.title}</Heading>
-          <Text size="4" color="gray">{course.description}</Text>
-          <Flex gap="4" align="center">
-            <Badge color={course.level === "入门" ? "green" : course.level === "中级" ? "blue" : "purple"}>
-              {course.level}
-            </Badge>
-            <Text color="gray">课程时长：{course.duration}</Text>
-          </Flex>
-          <Flex gap="2" wrap="wrap">
-            {course.skills.map((skill, index) => (
-              <Badge key={index} color="blue">{skill}</Badge>
-            ))}
-          </Flex>
-        </Flex>
-      </Box>
+interface Module {
+  title: string;
+  description: string;
+  lessons: Lesson[];
+}
 
-      {/* Course Content */}
+interface Course {
+  title: string;
+  description: string;
+  duration: string;
+  level: string;
+  skills: string[];
+  modules: Module[];
+}
+
+interface CourseDetailProps {
+  course: Course;
+  onLessonClick?: (lesson: Lesson) => void;
+}
+
+const CourseDetail: React.FC<CourseDetailProps> = ({ course, onLessonClick }) => {
+  return (
+    <Container size="3" style={{ padding: '2rem 0' }}>
       <Grid columns="3" gap="6">
         {/* Main Content */}
         <Box style={{ gridColumn: 'span 2' }}>
@@ -60,8 +48,9 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
                     style={{
                       padding: '1rem',
                       borderBottom: '1px solid var(--gray-4)',
-                      cursor: 'pointer'
+                      cursor: lesson.path ? 'pointer' : 'default'
                     }}
+                    onClick={() => lesson.path && onLessonClick?.(lesson)}
                   >
                     <Flex gap="3" align="center">
                       <Badge color={
@@ -73,7 +62,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
                          lesson.type === 'practice' ? '练习' :
                          '测验'}
                       </Badge>
-                      <Text>{lesson.title}</Text>
+                      <Text style={{
+                        textDecoration: lesson.path ? 'underline' : 'none',
+                        color: lesson.path ? 'var(--blue-9)' : 'inherit'
+                      }}>{lesson.title}</Text>
                     </Flex>
                     <Text color="gray">{lesson.duration}</Text>
                   </Flex>
@@ -85,29 +77,25 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
 
         {/* Sidebar */}
         <Box>
-          <Card style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
-            <Flex direction="column" gap="4">
-              <Heading size="4">课程概览</Heading>
-              <Box>
-                <Text weight="bold" mb="2">你将学到：</Text>
-                <Flex direction="column" gap="2">
+          <Card style={{ padding: '2rem', marginBottom: '2rem' }}>
+            <Heading size="4" mb="4">课程信息</Heading>
+            <Flex direction="column" gap="3">
+              <Flex justify="between">
+                <Text color="gray">难度</Text>
+                <Text>{course.level}</Text>
+              </Flex>
+              <Flex justify="between">
+                <Text color="gray">时长</Text>
+                <Text>{course.duration}</Text>
+              </Flex>
+              <Flex justify="between">
+                <Text color="gray">技能</Text>
+                <Flex gap="2" wrap="wrap" style={{ maxWidth: '200px' }}>
                   {course.skills.map((skill, index) => (
-                    <Text key={index}>• {skill}</Text>
+                    <Badge key={index} color="blue">{skill}</Badge>
                   ))}
                 </Flex>
-              </Box>
-              <Box>
-                <Text weight="bold" mb="2">课程包含：</Text>
-                <Flex direction="column" gap="2">
-                  <Text>• {course.modules.reduce((acc, module) => acc + module.lessons.length, 0)} 个课时</Text>
-                  <Text>• 实践练习</Text>
-                  <Text>• 测验评估</Text>
-                  <Text>• 证书认证</Text>
-                </Flex>
-              </Box>
-              <Button size="3" style={{ marginTop: '1rem' }}>
-                开始学习
-              </Button>
+              </Flex>
             </Flex>
           </Card>
         </Box>

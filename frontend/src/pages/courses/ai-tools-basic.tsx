@@ -1,4 +1,5 @@
 import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import CourseDetail from '../../components/CourseDetail';
 
 type LessonType = 'video' | 'practice' | 'quiz';
@@ -7,6 +8,7 @@ interface Lesson {
   title: string;
   duration: string;
   type: LessonType;
+  path?: string;
 }
 
 interface Module {
@@ -72,9 +74,10 @@ const courseData: Course = {
           type: "practice"
         },
         {
-          title: "2.4 提示词编写测验",
+          title: "2.4 提示词编写练习",
           duration: "30分钟",
-          type: "quiz"
+          type: "quiz",
+          path: "/courses/ai-tools-basic/quiz/2-4"
         }
       ]
     },
@@ -103,7 +106,15 @@ const courseData: Course = {
 };
 
 const AIToolsBasicPage: NextPage = () => {
-  return <CourseDetail course={courseData} />;
+  const router = useRouter();
+
+  const handleLessonClick = (lesson: Lesson) => {
+    if (lesson.path) {
+      router.push(lesson.path);
+    }
+  };
+
+  return <CourseDetail course={courseData} onLessonClick={handleLessonClick} />;
 };
 
 export default AIToolsBasicPage; 
