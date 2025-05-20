@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Flex } from '@radix-ui/themes';
 import HeroSection from './home/HeroSection';
+import CourseSearch from './home/CourseSearch';
 import PopularPrograms from './home/PopularPrograms';
 import UserSidebar from './home/UserSidebar';
 import FeaturesSection from './home/FeaturesSection';
@@ -21,6 +22,7 @@ const Home: React.FC = () => {
           {/* Main Content */}
           <Box style={{ flex: 1 }}>
             <HeroSection />
+            <CourseSearch />
             <PopularPrograms />
           </Box>
 
