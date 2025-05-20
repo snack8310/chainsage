@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import { Box, Container, Grid, Heading, Text, Card, Flex, Badge } from '@radix-ui/themes';
+import { Box, Container, Grid, Heading, Text, Card, Flex, Badge, Button } from '@radix-ui/themes';
 import Link from 'next/link';
 
 const courses = [
@@ -71,49 +71,79 @@ const courses = [
 
 const CoursesPage: NextPage = () => {
   return (
-    <Container style={{ padding: '4rem 0' }}>
-      <Heading size="8" mb="6" align="center">AI工作能力提升课程</Heading>
-      <Text size="4" color="gray" align="center" mb="8" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        从基础应用到专业提升，全方位提升您的AI工作能力
-      </Text>
+    <>
+      <Box 
+        style={{
+          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          padding: '6rem 0',
+          color: 'white',
+          marginBottom: '4rem'
+        }}
+      >
+        <Container>
+          <Flex direction="column" align="center" gap="4">
+            <Heading size="8" style={{ textAlign: 'center' }}>
+              探索AI的无限可能
+            </Heading>
+            <Text size="5" style={{ textAlign: 'center', maxWidth: '600px', opacity: 0.9 }}>
+              从基础入门到专业提升，打造您的AI工作能力
+            </Text>
+            <Flex gap="4" mt="4">
+              <Button size="3" variant="solid" style={{ background: 'white', color: '#4F46E5' }}>
+                开始学习
+              </Button>
+              <Button size="3" variant="outline" style={{ borderColor: 'white', color: 'white' }}>
+                了解更多
+              </Button>
+            </Flex>
+          </Flex>
+        </Container>
+      </Box>
 
-      {courses.map((category, index) => (
-        <Box key={index} mb="8">
-          <Heading size="6" mb="4">{category.category}</Heading>
-          <Grid columns="2" gap="6">
-            {category.items.map((course, courseIndex) => (
-              <Link 
-                key={courseIndex} 
-                href={`/courses/${course.id}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <Card style={{ padding: '2rem', cursor: 'pointer', transition: 'transform 0.2s' }}>
-                  <Flex direction="column" gap="4">
-                    <Box>
-                      <Heading size="4" mb="2">{course.title}</Heading>
-                      <Text color="gray" mb="4">{course.description}</Text>
-                    </Box>
-                    
-                    <Flex gap="2" wrap="wrap">
-                      {course.skills.map((skill, skillIndex) => (
-                        <Badge key={skillIndex} color="blue">{skill}</Badge>
-                      ))}
-                    </Flex>
+      <Container style={{ padding: '0 0 4rem 0' }}>
+        <Heading size="8" mb="6" align="center">AI工作能力提升课程</Heading>
+        <Text size="4" color="gray" align="center" mb="8" style={{ maxWidth: '800px', margin: '0 auto' }}>
+          从基础应用到专业提升，全方位提升您的AI工作能力
+        </Text>
 
-                    <Flex justify="between" align="center">
-                      <Text size="2" color="gray">课程时长：{course.duration}</Text>
-                      <Badge color={course.level === "入门" ? "green" : course.level === "中级" ? "blue" : "purple"}>
-                        {course.level}
-                      </Badge>
+        {courses.map((category, index) => (
+          <Box key={index} mb="8">
+            <Heading size="6" mb="4">{category.category}</Heading>
+            <Grid columns="2" gap="6">
+              {category.items.map((course, courseIndex) => (
+                <Link 
+                  key={courseIndex} 
+                  href={`/courses/${course.id}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <Card style={{ padding: '2rem', cursor: 'pointer', transition: 'transform 0.2s' }}>
+                    <Flex direction="column" gap="4">
+                      <Box>
+                        <Heading size="4" mb="2">{course.title}</Heading>
+                        <Text color="gray" mb="4">{course.description}</Text>
+                      </Box>
+                      
+                      <Flex gap="2" wrap="wrap">
+                        {course.skills.map((skill, skillIndex) => (
+                          <Badge key={skillIndex} color="blue">{skill}</Badge>
+                        ))}
+                      </Flex>
+
+                      <Flex justify="between" align="center">
+                        <Text size="2" color="gray">课程时长：{course.duration}</Text>
+                        <Badge color={course.level === "入门" ? "green" : course.level === "中级" ? "blue" : "purple"}>
+                          {course.level}
+                        </Badge>
+                      </Flex>
                     </Flex>
-                  </Flex>
-                </Card>
-              </Link>
-            ))}
-          </Grid>
-        </Box>
-      ))}
-    </Container>
+                  </Card>
+                </Link>
+              ))}
+            </Grid>
+          </Box>
+        ))}
+      </Container>
+    </>
   );
 };
 
