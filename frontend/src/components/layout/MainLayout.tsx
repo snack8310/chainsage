@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, Text, Container, Flex } from '@radix-ui/themes';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -9,6 +10,8 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, username, onLogout }) => {
+  const router = useRouter();
+  const currentPath = router.pathname;
   return (
     <Box style={{ 
       minHeight: '100vh',
@@ -33,13 +36,40 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, username, onLogout })
               </Link>
               <Flex gap="3">
                 <Link href="/courses" style={{ textDecoration: 'none' }}>
-                  <Text size="3" color="gray">Courses</Text>
+                  <Text
+                    size="3"
+                    color="gray"
+                    style={{
+                      textDecoration: currentPath === '/courses' ? 'underline' : 'none',
+                      textUnderlineOffset: '4px'
+                    }}
+                  >
+                    Courses
+                  </Text>
                 </Link>
                 <Link href="/practices" style={{ textDecoration: 'none' }}>
-                  <Text size="3" color="gray">Practices</Text>
+                  <Text
+                    size="3"
+                    color="gray"
+                    style={{
+                      textDecoration: currentPath === '/practices' ? 'underline' : 'none',
+                      textUnderlineOffset: '4px'
+                    }}
+                  >
+                    Practices
+                  </Text>
                 </Link>
                 <Link href="/chat" style={{ textDecoration: 'none' }}>
-                  <Text size="3" color="gray">Chat</Text>
+                  <Text
+                    size="3"
+                    color="gray"
+                    style={{
+                      textDecoration: currentPath === '/chat' ? 'underline' : 'none',
+                      textUnderlineOffset: '4px'
+                    }}
+                  >
+                    Chat
+                  </Text>
                 </Link>
               </Flex>
             </Flex>
