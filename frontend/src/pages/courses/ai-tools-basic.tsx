@@ -1,5 +1,4 @@
 import type { NextPage } from 'next';
-import { useRouter } from 'next/router';
 import CourseDetail from '../../components/CourseDetail';
 
 type LessonType = 'video' | 'practice' | 'quiz';
@@ -25,25 +24,24 @@ interface Course {
   modules: Module[];
 }
 
-// 模拟课程数据
 const courseData: Course = {
   title: "AI工具基础应用",
-  description: "掌握ChatGPT、Claude等主流AI工具的基本使用方法，了解AI助手的工作方式",
+  description: "掌握ChatGPT、Claude等主流AI工具的基本使用方法，了解AI助手的工作方式，学习如何有效利用这些工具完成各种任务",
   duration: "4周",
   level: "入门",
-  skills: ["AI工具使用", "提示词编写", "结果优化"],
+  skills: ["AI工具使用", "提示词工程", "AI助手应用", "任务自动化"],
   modules: [
     {
       title: "模块一：AI助手基础入门",
       description: "了解主流AI助手的特点和使用场景",
       lessons: [
         {
-          title: "1.1 认识ChatGPT",
+          title: "1.1 ChatGPT入门指南",
           duration: "30分钟",
           type: "video"
         },
         {
-          title: "1.2 认识Claude",
+          title: "1.2 Claude使用教程",
           duration: "30分钟",
           type: "video"
         },
@@ -79,19 +77,33 @@ const courseData: Course = {
           type: "quiz"
         }
       ]
+    },
+    {
+      title: "模块三：实战应用",
+      description: "将AI工具应用到实际场景中",
+      lessons: [
+        {
+          title: "3.1 AI辅助内容创作",
+          duration: "45分钟",
+          type: "video"
+        },
+        {
+          title: "3.2 数据分析与研究",
+          duration: "50分钟",
+          type: "video"
+        },
+        {
+          title: "3.3 任务自动化项目",
+          duration: "90分钟",
+          type: "practice"
+        }
+      ]
     }
   ]
 };
 
-const CourseDetailPage: NextPage = () => {
-  const router = useRouter();
-  const { courseId } = router.query;
-
-  if (!courseId || typeof courseId !== 'string') {
-    return null;
-  }
-
+const AIToolsBasicPage: NextPage = () => {
   return <CourseDetail course={courseData} />;
 };
 
-export default CourseDetailPage; 
+export default AIToolsBasicPage; 
