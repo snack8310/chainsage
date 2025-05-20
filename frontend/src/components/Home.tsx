@@ -23,7 +23,9 @@ const Home: React.FC = () => {
           <Box style={{ flex: 1 }}>
             <HeroSection />
             <CourseSearch />
-            <PopularPrograms />
+            <Box style={{ marginTop: '2rem' }}>
+              <PopularPrograms />
+            </Box>
           </Box>
 
           {/* Sidebar */}

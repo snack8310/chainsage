@@ -4,6 +4,13 @@ import { Box, Text, Grid, Heading, Flex } from '@radix-ui/themes';
 const PopularPrograms: React.FC = () => {
   const programs = [
     {
+      title: '提示词编写练习',
+      description: 'AI工具基础课程 - 掌握提示词编写技巧',
+      level: '基础',
+      duration: '2-4 课时',
+      path: 'courses/ai-tools-basic/quiz/2-4'
+    },
+    {
       title: 'AI for Business Analysis',
       description: 'Leverage AI for data analysis and business insights',
       level: 'Beginner',
@@ -38,6 +45,11 @@ const PopularPrograms: React.FC = () => {
               boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
               transition: 'transform 0.2s',
               cursor: 'pointer'
+            }}
+            onClick={() => {
+              if (course.path) {
+                window.location.href = `/${course.path}`;
+              }
             }}
           >
             <Heading size="4" mb="2">{course.title}</Heading>
