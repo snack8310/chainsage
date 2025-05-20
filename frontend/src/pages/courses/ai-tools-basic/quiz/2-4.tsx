@@ -26,7 +26,7 @@ const QuizPage: React.FC = () => {
 
   return (
     <Box style={{ 
-      height: 'calc(100vh - 80px)', // header: padding(1rem * 2) + content height + box-shadow
+      height: 'calc(100vh - 80px)',
       display: 'flex', 
       flexDirection: 'column',
       background: 'var(--gray-1)'
@@ -46,8 +46,7 @@ const QuizPage: React.FC = () => {
           overflowY: 'auto'
         }}>
           <Box style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <Heading size="4" mb="2">提示词编写练习</Heading>
-            
+            <Heading size="3" mb="4">2.4 提示词编写练习</Heading>
             <Box>
               <Heading size="3" mb="2">练习目标</Heading>
               <Text mb="2">
@@ -159,18 +158,33 @@ const QuizPage: React.FC = () => {
       >
         <Container size="4">
           <Flex justify="between" align="center">
-            <Button 
-              variant="ghost" 
-              onClick={() => handleNavigation('/courses/ai-tools-basic/quiz/2-3')}
-            >
-              ← 2.3 提示词优化练习
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => handleNavigation('/courses/ai-tools-basic/lesson/3-1')}
-            >
-              3.1 AI辅助内容创作 →
-            </Button>
+            {/* 左侧标题 */}
+            <Text size="3" style={{ color: 'var(--gray-11)' }}>2.4 提示词编写练习</Text>
+
+            {/* 中间导航按钮 */}
+            <Flex gap="4" align="center">
+              <Button 
+                variant="ghost" 
+                onClick={() => handleNavigation('/courses/ai-tools-basic/quiz/2-3')}
+              >
+                ← 2.3 提示词优化练习
+              </Button>
+              <Button 
+                variant="ghost"
+                onClick={() => router.push('/courses/ai-tools-basic')}
+              >
+                评价
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => handleNavigation('/courses/ai-tools-basic/lesson/3-1')}
+              >
+                3.1 AI辅助内容创作 →
+              </Button>
+            </Flex>
+
+            {/* 右侧占位，保持布局平衡 */}
+            <Box style={{ width: '120px' }} />
           </Flex>
         </Container>
       </Box>
