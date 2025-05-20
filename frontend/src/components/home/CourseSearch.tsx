@@ -67,14 +67,16 @@ const CourseSearch: React.FC = () => {
         border: '1px solid var(--gray-5)',
         borderRadius: '8px',
         overflow: 'hidden',
-        background: 'white'
+        background: 'white',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
       {isExpanded && (
         <ScrollArea
           ref={messagesContainerRef}
           style={{
-            height: 'calc(100% - 60px)',
+            flex: 1,
             padding: '1rem'
           }}
         >
@@ -97,39 +99,41 @@ const CourseSearch: React.FC = () => {
               </Box>
             </Flex>
           ))}
-          {showFullChatLink && (
-            <Flex justify="center" mt="3">
-              <Button
-                variant="ghost"
-                onClick={handleFullChatClick}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(8px)',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                }}
-              >
-                Continue in full chat →
-              </Button>
-            </Flex>
-          )}
         </ScrollArea>
+      )}
+      {isExpanded && (
+        <Box style={{ width: '100%', margin: '0 0 0.5rem 0', textAlign: 'right' }}>
+          <Button
+            variant="ghost"
+            onClick={handleFullChatClick}
+            style={{
+              background: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            Continue in full chat →
+          </Button>
+        </Box>
       )}
       <Box
         style={{
-          padding: isExpanded ? '1rem' : '16px 24px',
+          padding: isExpanded ? '0 24px' : '16px 24px',
           borderTop: isExpanded ? '1px solid var(--gray-5)' : 'none',
           height: isExpanded ? 'auto' : '60px',
           display: 'flex',
           alignItems: isExpanded ? 'stretch' : 'center',
           justifyContent: 'center',
           background: 'white',
-          width: '100%'
+          width: '100%',
+          flexDirection: 'column'
         }}
       >
         <form
           onSubmit={handleSubmit}
           style={{
-            width: '100%'
+            width: '100%',
+            marginBottom: isExpanded ? 16 : 0
           }}
         >
           <Flex gap="2" align={isExpanded ? undefined : 'center'}>
