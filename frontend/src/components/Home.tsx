@@ -28,43 +28,43 @@ const Home: React.FC = () => {
             }}>
               <Flex direction="column" gap="4">
                 <Heading size="8">
-                  Learn to Code with AI
+                  Master AI in Your Workplace
                 </Heading>
                 <Text size="4" style={{ maxWidth: '500px' }}>
-                  Master programming through interactive lessons, real-world projects, and personalized AI guidance
+                  Enhance your productivity with AI tools through practical workplace scenarios, real-world applications, and expert guidance
                 </Text>
                 <Flex gap="4">
                   <Button size="3" variant="solid" style={{ background: 'white', color: 'var(--blue-9)' }}>
-                    Start Learning
+                    Start Training
                   </Button>
                   <Button size="3" variant="outline" style={{ borderColor: 'white', color: 'white' }}>
-                    View Courses
+                    View Programs
                   </Button>
                 </Flex>
               </Flex>
             </Box>
 
-            {/* Popular Courses Section */}
-            <Heading size="6" mb="6" align="center">Popular Courses</Heading>
+            {/* Popular Programs Section */}
+            <Heading size="6" mb="6" align="center">Popular Programs</Heading>
             <Grid columns="2" gap="6">
               {[
                 {
-                  title: 'Python Basics',
-                  description: 'Learn Python fundamentals with hands-on projects',
+                  title: 'AI for Business Analysis',
+                  description: 'Leverage AI for data analysis and business insights',
                   level: 'Beginner',
+                  duration: '6 weeks'
+                },
+                {
+                  title: 'AI-Powered Productivity',
+                  description: 'Master AI tools for workplace efficiency',
+                  level: 'Intermediate',
                   duration: '8 weeks'
                 },
                 {
-                  title: 'Web Development',
-                  description: 'Master HTML, CSS, and JavaScript',
-                  level: 'Intermediate',
-                  duration: '12 weeks'
-                },
-                {
-                  title: 'Data Science',
-                  description: 'Data analysis and machine learning with Python',
+                  title: 'Advanced AI Integration',
+                  description: 'Implement AI solutions in your organization',
                   level: 'Advanced',
-                  duration: '16 weeks'
+                  duration: '12 weeks'
                 }
               ].map((course, index) => (
                 <Box
@@ -151,21 +151,21 @@ const Home: React.FC = () => {
         <Container>
           <Grid columns="3" gap="6">
             <Box>
-              <Heading size="4" mb="3">AI-Powered Learning</Heading>
+              <Heading size="4" mb="3">AI-Powered Efficiency</Heading>
               <Text color="gray">
-                Get personalized feedback and guidance from our AI tutor that adapts to your learning style
+                Learn how to leverage AI tools to streamline your workflow and boost productivity
               </Text>
             </Box>
             <Box>
-              <Heading size="4" mb="3">Project-Based Learning</Heading>
+              <Heading size="4" mb="3">Practical Applications</Heading>
               <Text color="gray">
-                Build real-world projects that you can add to your portfolio while learning
+                Master real-world AI applications that solve common workplace challenges
               </Text>
             </Box>
             <Box>
-              <Heading size="4" mb="3">Community Support</Heading>
+              <Heading size="4" mb="3">Expert Support</Heading>
               <Text color="gray">
-                Join a community of learners, share your progress, and get help when you need it
+                Get guidance from AI experts and share experiences with other professionals
               </Text>
             </Box>
           </Grid>
@@ -175,9 +175,9 @@ const Home: React.FC = () => {
       {/* CTA Section */}
       <Container style={{ padding: '6rem 0' }}>
         <Flex direction="column" align="center" gap="4">
-          <Heading size="6" align="center">Ready to Start Your Coding Journey?</Heading>
+          <Heading size="6" align="center">Ready to Transform Your Workplace with AI?</Heading>
           <Text size="4" color="gray" align="center" style={{ maxWidth: '600px' }}>
-            Join thousands of learners who are already building their future with ChainSage
+            Join professionals who are already enhancing their productivity with ChainSage AI training
           </Text>
           <Button size="4" variant="solid" style={{ background: 'var(--blue-9)' }}>
             Get Started for Free
