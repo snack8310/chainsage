@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Container, Heading, Text, Flex, Card, Button, TextArea, Grid, Separator } from '@radix-ui/themes';
 import { useRouter } from 'next/router';
+import CourseNavigation from '../../../../components/CourseNavigation';
 
 const QuizPage: React.FC = () => {
   const router = useRouter();
@@ -18,10 +19,6 @@ const QuizPage: React.FC = () => {
     setChatHistory(prev => [...prev, { role: 'assistant', content: aiResponse }]);
     
     setUserInput('');
-  };
-
-  const handleNavigation = (path: string) => {
-    router.push(path);
   };
 
   return (
@@ -46,7 +43,6 @@ const QuizPage: React.FC = () => {
           overflowY: 'auto'
         }}>
           <Box style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <Heading size="3" mb="4">2.4 提示词编写练习</Heading>
             <Box>
               <Heading size="3" mb="2">练习目标</Heading>
               <Text mb="2">
@@ -148,46 +144,18 @@ const QuizPage: React.FC = () => {
       </Box>
 
       {/* 底部导航栏 */}
-      <Box 
-        style={{ 
-          borderTop: '1px solid var(--gray-4)',
-          background: 'white',
-          padding: '0.5rem 0',
-          flexShrink: 0
+      <CourseNavigation
+        title="2.4 提示词编写练习"
+        prevLesson={{
+          title: "2.3 提示词优化练习",
+          path: "/courses/ai-tools-basic/quiz/2-3"
         }}
-      >
-        <Container size="4">
-          <Flex justify="between" align="center">
-            {/* 左侧标题 */}
-            <Text size="3" style={{ color: 'var(--gray-11)' }}>2.4 提示词编写练习</Text>
-
-            {/* 中间导航按钮 */}
-            <Flex gap="4" align="center">
-              <Button 
-                variant="ghost" 
-                onClick={() => handleNavigation('/courses/ai-tools-basic/quiz/2-3')}
-              >
-                ← 2.3 提示词优化练习
-              </Button>
-              <Button 
-                variant="ghost"
-                onClick={() => router.push('/courses/ai-tools-basic')}
-              >
-                评价
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => handleNavigation('/courses/ai-tools-basic/lesson/3-1')}
-              >
-                3.1 AI辅助内容创作 →
-              </Button>
-            </Flex>
-
-            {/* 右侧占位，保持布局平衡 */}
-            <Box style={{ width: '120px' }} />
-          </Flex>
-        </Container>
-      </Box>
+        nextLesson={{
+          title: "3.1 AI辅助内容创作",
+          path: "/courses/ai-tools-basic/lesson/3-1"
+        }}
+        onRate={() => router.push('/courses/ai-tools-basic')}
+      />
     </Box>
   );
 };
