@@ -7,6 +7,7 @@ const QuizPage: React.FC = () => {
   const router = useRouter();
   const [userInput, setUserInput] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const handleSubmit = () => {
     if (!userInput.trim()) return;
@@ -14,6 +15,10 @@ const QuizPage: React.FC = () => {
     // 模拟AI响应
     const response = "让我帮你分析一下这个提示词...\n\n1. 角色设定：你设定了明确的角色\n2. 任务要求：目标清晰\n3. 输出格式：结构合理\n\n建议：可以添加一些具体的示例，这样AI能更好地理解你的需求。";
     setAiResponse(response);
+  };
+
+  const handleRate = () => {
+    setShowFeedback(true);
   };
 
   return (
@@ -35,9 +40,11 @@ const QuizPage: React.FC = () => {
           padding: '0 1.5rem',
           borderRight: '1px solid var(--gray-4)',
           background: 'white',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column'
         }}>
-          <Box style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <Box style={{ maxWidth: '800px', margin: '0 auto', flex: 1 }}>
             <Box>
               <Heading size="3" mb="2">练习目标</Heading>
               <Text mb="2">
@@ -66,6 +73,42 @@ const QuizPage: React.FC = () => {
                 <Text>3. 根据反馈优化提示词</Text>
               </Box>
             </Box>
+
+            {/* 检查反馈区域 */}
+            {showFeedback && (
+              <Box 
+                mt="4" 
+                style={{ 
+                  padding: '1rem',
+                  background: 'var(--gray-2)',
+                  borderRadius: '4px',
+                  border: '1px solid var(--gray-4)'
+                }}
+              >
+                <Heading size="3" mb="2">检查结果</Heading>
+                
+                <Box mb="3">
+                  <Text weight="medium" mb="1">做得好的地方：</Text>
+                  <Box style={{ padding: '0.5rem', background: 'var(--green-3)', borderRadius: '4px' }}>
+                    <Text>✓ 提示词结构完整，包含了角色设定和任务要求</Text>
+                    <Text>✓ 任务目标明确，便于AI理解和执行</Text>
+                  </Box>
+                </Box>
+
+                <Box mb="3">
+                  <Text weight="medium" mb="1">需要改进的地方：</Text>
+                  <Box style={{ padding: '0.5rem', background: 'var(--yellow-3)', borderRadius: '4px' }}>
+                    <Text>⚠️ 可以添加具体的示例，帮助AI更好地理解需求</Text>
+                    <Text>⚠️ 建议明确指定输出格式，如"请以列表形式呈现"</Text>
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Text weight="medium" mb="1">建议：</Text>
+                  <Text>尝试在提示词中加入一个具体的文章示例，并明确指定期望的输出格式。这样可以帮助AI更准确地理解你的需求，提供更有针对性的分析。</Text>
+                </Box>
+              </Box>
+            )}
           </Box>
         </Box>
 
@@ -147,7 +190,7 @@ const QuizPage: React.FC = () => {
           title: "3.1 AI辅助内容创作",
           path: "/courses/ai-tools-basic/lesson/3-1"
         }}
-        onRate={() => router.push('/courses/ai-tools-basic')}
+        onRate={handleRate}
       />
     </Box>
   );
