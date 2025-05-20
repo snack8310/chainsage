@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Text, Flex, TextField, Button, Card } from '@radix-ui/themes';
+import { Box, Text, Flex, TextField, Button, ScrollArea } from '@radix-ui/themes';
+import { useRouter } from 'next/router';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,29 +11,26 @@ const CourseSearch: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [showFullChatLink, setShowFullChatLink] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    scrollToBottom();
+    if (messagesContainerRef.current) {
+      const { scrollHeight, clientHeight } = messagesContainerRef.current;
+      setShowFullChatLink(scrollHeight > clientHeight);
+    }
   }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Expand the chat if it's not already expanded
-    if (!isExpanded) {
-      setIsExpanded(true);
-    }
-
     // Add user message
-    const newMessages: Message[] = [...messages, { role: 'user' as const, content: input }];
+    const newMessages = [...messages, { role: 'user' as const, content: input }];
     setMessages(newMessages);
     setInput('');
+    setIsExpanded(true);
 
     // Simulate AI response (in a real app, this would be an API call)
     setTimeout(() => {
@@ -54,69 +52,101 @@ const CourseSearch: React.FC = () => {
     return "I can help you find the right course. Could you tell me more about your experience level and specific interests in AI?";
   };
 
-  return (
-    <Card style={{ marginBottom: '3rem' }}>
-      <Box style={{ 
-        height: isExpanded ? '400px' : 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'height 0.3s ease-in-out'
-      }}>
-        {/* Messages Container - Only show when expanded */}
-        {isExpanded && (
-          <Box style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            padding: '1rem',
-            background: 'var(--gray-2)'
-          }}>
-            {messages.map((message, index) => (
-              <Flex
-                key={index}
-                justify={message.role === 'user' ? 'end' : 'start'}
-                mb="3"
-              >
-                <Box
-                  style={{
-                    maxWidth: '80%',
-                    padding: '1rem',
-                    borderRadius: '12px',
-                    background: message.role === 'user' ? 'var(--blue-9)' : 'white',
-                    color: message.role === 'user' ? 'white' : 'inherit',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <Text size="3">{message.content}</Text>
-                </Box>
-              </Flex>
-            ))}
-            <div ref={messagesEndRef} />
-          </Box>
-        )}
+  const handleFullChatClick = () => {
+    // Save current chat history
+    localStorage.setItem('courseChatHistory', JSON.stringify(messages));
+    // Navigate to full chat page
+    router.push('/chat');
+  };
 
-        {/* Input Form */}
-        <Box style={{ 
-          padding: '1rem', 
-          borderTop: isExpanded ? '1px solid var(--gray-5)' : 'none',
-          background: 'white'
-        }}>
-          <form onSubmit={handleSubmit}>
-            <Flex gap="2">
-              <TextField.Root style={{ flex: 1 }}>
-                <TextField.Input
-                  placeholder="Ask about courses..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                />
-              </TextField.Root>
-              <Button type="submit" variant="solid">
-                Send
+  return (
+    <Box
+      style={{
+        height: isExpanded ? '400px' : '60px',
+        transition: 'height 0.3s ease-in-out',
+        border: '1px solid var(--gray-5)',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        background: 'white'
+      }}
+    >
+      {isExpanded && (
+        <ScrollArea
+          ref={messagesContainerRef}
+          style={{
+            height: 'calc(100% - 60px)',
+            padding: '1rem'
+          }}
+        >
+          {messages.map((message, index) => (
+            <Flex
+              key={index}
+              justify={message.role === 'user' ? 'end' : 'start'}
+              mb="3"
+            >
+              <Box
+                style={{
+                  maxWidth: '80%',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  background: message.role === 'user' ? 'var(--blue-9)' : 'var(--gray-3)',
+                  color: message.role === 'user' ? 'white' : 'inherit'
+                }}
+              >
+                <Text size="3">{message.content}</Text>
+              </Box>
+            </Flex>
+          ))}
+          {showFullChatLink && (
+            <Flex justify="center" mt="3">
+              <Button
+                variant="ghost"
+                onClick={handleFullChatClick}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                Continue in full chat →
               </Button>
             </Flex>
-          </form>
-        </Box>
+          )}
+        </ScrollArea>
+      )}
+      <Box
+        style={{
+          padding: isExpanded ? '1rem' : '16px 24px',
+          borderTop: isExpanded ? '1px solid var(--gray-5)' : 'none',
+          height: isExpanded ? 'auto' : '60px',
+          display: 'flex',
+          alignItems: isExpanded ? 'stretch' : 'center',
+          justifyContent: 'center',
+          background: 'white',
+          width: '100%'
+        }}
+      >
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            width: '100%'
+          }}
+        >
+          <Flex gap="2" align={isExpanded ? undefined : 'center'}>
+            <TextField.Root style={{ flex: 1 }}>
+              <TextField.Input
+                placeholder="Ask about our courses..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+              />
+            </TextField.Root>
+            <Button type="submit" variant="solid">
+              Send
+            </Button>
+          </Flex>
+        </form>
       </Box>
-    </Card>
+    </Box>
   );
 };
 
